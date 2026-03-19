@@ -1,0 +1,548 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Banned Users - Admin - Smart Rent House</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --primary-light: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #0ea5e9;
+            --muted: #6b7280;
+            --light: #f9fafb;
+            --lighter: #f3f4f6;
+            --border: #e5e7eb;
+            --bg: #f6f8fb;
+            --text: #1f2937;
+            --text-secondary: #6b7280;
+        }
+
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 0 32px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            height: 70px;
+        }
+
+        .navbar .logo {
+            font-weight: 700;
+            color: white;
+            font-size: 1.3rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-badge {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links a:hover {
+            color: white;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .lead {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Messages */
+        .message {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+        }
+
+        .message-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .message-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-icon {
+            font-size: 5rem;
+            margin-bottom: 16px;
+            color: var(--success);
+        }
+
+        .empty-state h2 {
+            font-size: 1.5rem;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            color: var(--text-secondary);
+        }
+
+        /* Table Container */
+        .table-wrapper {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 20px;
+            background: var(--lighter);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--text);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--lighter);
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 16px 12px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tbody tr:hover {
+            background: var(--light);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-banned {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .role-landlord {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .role-tenant {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-ban {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-ban:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-unban {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-unban:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--lighter);
+            border-radius: 12px 12px 0 0;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: var(--text);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            background: var(--lighter);
+            border-radius: 0 0 12px 12px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-secondary {
+            background: var(--muted);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            color: white;
+            padding: 40px 32px;
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .footer p {
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 16px; }
+            .navbar { padding: 0 16px; }
+            h1 { font-size: 1.5rem; }
+            .nav-links { gap: 12px; }
+            table { font-size: 0.9rem; }
+            th, td { padding: 12px 8px; }
+            .btn { padding: 8px 16px; font-size: 0.85rem; }
+        }
+    </style>
+    
+    <link rel="stylesheet" href="/css/professional-theme.css">
+        <link rel="stylesheet" href="/css/chatbot-widget.css">
+<link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i>
+            <span>NIVASA</span>
+            <span class="admin-badge">ADMIN PANEL</span>
+        </div>
+        <div class="nav-links">
+            <a th:href="@{/admin-dashboard}"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a th:href="@{/admin/pending-properties}"><i class="fas fa-home"></i> Properties</a>
+            <a th:href="@{/admin/pending-student-verifications}"><i class="fas fa-graduation-cap"></i> Students</a>
+            <a th:href="@{/admin/banned-users}" class="active"><i class="fas fa-ban"></i> Banned Users</a>
+            <a th:href="@{/logout}" style="color: #fee2e2;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="page-header">
+            <h1>
+                <i class="fas fa-ban"></i> Banned Users Management
+            </h1>
+            <p class="lead">
+                <i class="fas fa-info-circle"></i> Manage users banned for violating platform policies
+            </p>
+        </div>
+
+        <!-- Messages -->
+        <div th:if="${message}" class="message message-success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${message}"></span>
+        </div>
+        <div th:if="${error}" class="message message-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${#lists.isEmpty(users)}" class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h2>No Banned Users</h2>
+            <p>All users are currently in good standing.</p>
+        </div>
+
+        <!-- Users Table -->
+        <div th:if="${!#lists.isEmpty(users)}" class="table-wrapper">
+            <div class="table-header">
+                <h3>
+                    <i class="fas fa-database"></i>
+                    Banned Users (<span th:text="${users.size()}">0</span>)
+                </h3>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-user"></i> User Name</th>
+                            <th><i class="fas fa-envelope"></i> Email</th>
+                            <th><i class="fas fa-user-tag"></i> Role</th>
+                            <th><i class="fas fa-ban"></i> Status</th>
+                            <th><i class="fas fa-comment"></i> Ban Reason</th>
+                            <th style="text-align: center;"><i class="fas fa-actions"></i> Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="user : ${users}">
+                            <td><strong th:text="${user.firstName + ' ' + user.lastName}">John Doe</strong></td>
+                            <td th:text="${user.email}">user@example.com</td>
+                            <td>
+                                <span th:if="${user.role == 'LANDLORD'}" class="role-badge role-landlord">
+                                    <i class="fas fa-home"></i> Landlord
+                                </span>
+                                <span th:if="${user.role == 'TENANT'}" class="role-badge role-tenant">
+                                    <i class="fas fa-user"></i> Tenant
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge status-banned">
+                                    <i class="fas fa-ban"></i> Banned
+                                </span>
+                            </td>
+                            <td th:text="${user.banReason != null  user.banReason : 'No reason specified'}">Violation of platform policy</td>
+                            <td style="text-align: center;">
+                                <form th:action="@{/admin/user/{id}/unban(id=${user.id})}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-unban" onclick="return confirm('Are you sure you want to unban this user')">
+                                        <i class="fas fa-check"></i> Unban
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quick Ban Form -->
+        <div class="table-wrapper" style="margin-top: 32px;">
+            <div class="table-header">
+                <h3>
+                    <i class="fas fa-gavel"></i>
+                    Ban User by Email
+                </h3>
+            </div>
+            <div style="padding: 20px;">
+                <form th:action="@{/admin/ban-user-by-email}" method="post">
+                    <div style="display: flex; gap: 16px; align-items: end; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1; min-width: 200px;">
+                            <label for="email">User Email:</label>
+                            <input type="email" id="email" name="email" required
+                                   style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem;">
+                        </div>
+                        <div class="form-group" style="flex: 2; min-width: 300px;">
+                            <label for="banReason">Ban Reason:</label>
+                            <input type="text" id="banReason" name="banReason"
+                                   placeholder="e.g., Violation of platform policy: Brokers, agents, and intermediaries are not allowed"
+                                   style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem;">
+                        </div>
+                        <button type="submit" class="btn btn-ban">
+                            <i class="fas fa-ban"></i> Ban User
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Smart Rent House Admin Panel. All rights reserved. | Powered by NIVASA</p>
+    </footer>
+
+    <script>
+        // Add confirmation for ban actions
+        document.querySelectorAll('.btn-unban').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                if (!confirm('Are you sure you want to unban this user They will regain access to the platform.')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+    <script src="/js/chatbot-widget.js"></script>
+</body>
+</html>
+
+

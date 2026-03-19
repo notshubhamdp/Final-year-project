@@ -1,0 +1,183 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Verification - Admin - Smart Rent House</title>
+    <style>
+        :root{--bg:#f6f8fb;--card:#ffffff;--accent:#4f46e5;--muted:#6b7280;--success:#10b981;--warning:#f59e0b;--danger:#ef4444}
+        html,body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#eef2ff 0%, #f8fafc 100%);color:#0f172a}
+        .navbar{background:#fff;padding:16px 32px;box-shadow:0 2px 8px rgba(15,23,42,0.04);display:flex;justify-content:space-between;align-items:center}
+        .logo{font-weight:700;color:var(--accent)}
+        .nav-links{display:flex;gap:24px}
+        .nav-links a{color:var(--accent);text-decoration:none;font-weight:500}
+        .admin-badge{background:var(--danger);color:white;padding:4px 8px;border-radius:4px;font-size:0.75rem;font-weight:600}
+        .container{max-width:900px;margin:32px auto;padding:0 32px}
+        h1{font-size:2rem;margin:0 0 8px}
+        .lead{color:var(--muted);margin:0 0 32px}
+        .card{background:white;border-radius:12px;padding:24px;box-shadow:0 4px 12px rgba(15,23,42,0.08);margin-bottom:24px}
+        .student-info{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-bottom:24px}
+        .info-group{display:flex;flex-direction:column}
+        .info-label{font-size:0.85rem;color:var(--muted);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px}
+        .info-value{font-size:1.1rem;font-weight:600}
+        .document-section{margin:24px 0}
+        .document-section h2{font-size:1.25rem;margin:0 0 16px}
+        .document-viewer{background:#f3f4f6;border-radius:8px;padding:16px;margin:16px 0;text-align:center;min-height:200px;display:flex;align-items:center;justify-content:center}
+        .document-viewer img{max-width:100%;max-height:400px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+        .document-viewer embed{width:100%;height:400px}
+        .document-name{font-size:0.9rem;color:var(--muted);margin-top:8px}
+        .action-buttons{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px}
+        .btn{display:block;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;text-align:center;border:none;cursor:pointer;font-size:1rem}
+        .btn-approve{background:var(--success);color:white}
+        .btn-approve:hover{opacity:0.9}
+        .btn-reject{background:var(--danger);color:white}
+        .btn-reject:hover{opacity:0.9}
+        .btn-back{background:var(--muted);color:white;margin-bottom:24px;display:inline-block}
+        .btn-back:hover{opacity:0.9}
+        .rejection-form{display:none;background:#fee2e2;padding:16px;border-radius:8px;margin-top:12px;border-left:4px solid var(--danger)}
+        .rejection-form.active{display:block}
+        .rejection-form textarea{width:100%;padding:12px;border:1px solid #fca5a5;border-radius:6px;font-family:inherit;font-size:1rem;margin:12px 0}
+        .rejection-form textarea:focus{outline:none;border-color:var(--danger);box-shadow:0 0 0 3px rgba(239,68,68,0.1)}
+        .rejection-form button{background:var(--danger);color:white;padding:10px 20px;border:none;border-radius:6px;font-weight:600;cursor:pointer;margin-right:8px}
+        .rejection-form button:hover{opacity:0.9}
+        .rejection-form button.cancel{background:var(--muted)}
+        .status-badge{display:inline-block;padding:6px 12px;border-radius:20px;font-size:0.9rem;font-weight:600}
+        .status-pending{background:#fef3c7;color:#92400e}
+        .status-approved{background:#dcfce7;color:#166534}
+        .status-rejected{background:#fee2e2;color:#991b1b}
+        .message{padding:12px 16px;border-radius:8px;margin-bottom:16px}
+        .message-success{background:#dcfce7;color:#166534}
+        .message-error{background:#fee2e2;color:#991b1b}
+        @media (max-width:768px){
+            .container{padding:0 16px}
+            .student-info{grid-template-columns:1fr}
+            .action-buttons{grid-template-columns:1fr}
+        }
+    </style>
+    <link rel='stylesheet' href='/css/admin-student-verification-detail.css'>
+    <script src='/js/admin-student-verification-detail_1.js'></script>
+        
+    <link rel="stylesheet" href="/css/professional-theme.css">
+        <link rel="stylesheet" href="/css/chatbot-widget.css">
+<link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+<!-- Navbar -->
+<div class="navbar">
+    <div class="logo">Smart Rent House <span class="admin-badge">ADMIN</span></div>
+    <div class="nav-links">
+        <a th:href="@{/admin-dashboard}">Dashboard</a>
+        <a th:href="@{/admin/pending-properties}">Properties</a>
+        <a th:href="@{/admin/pending-student-verifications}">Students</a>
+        <a th:href="@{/logout}">Logout</a>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <a href="#" onclick="history.back()" class="btn btn-back">&#8592; Back to Students</a>
+    
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h1>Student Verification</h1>
+            <span th:if="${student.studentVerificationStatus == 'PENDING'}" class="status-badge status-pending">&#9203; Pending</span>
+            <span th:if="${student.studentVerificationStatus == 'APPROVED'}" class="status-badge status-approved">&#10003; Approved</span>
+            <span th:if="${student.studentVerificationStatus == 'REJECTED'}" class="status-badge status-rejected">&#10007; Rejected</span>
+        </div>
+
+        <!-- Student Information -->
+        <div class="student-info">
+            <div class="info-group">
+                <label class="info-label">First Name</label>
+                <span class="info-value" th:text="${student.firstName}">John</span>
+            </div>
+            <div class="info-group">
+                <label class="info-label">Last Name</label>
+                <span class="info-value" th:text="${student.lastName}">Doe</span>
+            </div>
+            <div class="info-group">
+                <label class="info-label">Email</label>
+                <span class="info-value" th:text="${student.email}">student@example.com</span>
+            </div>
+            <div class="info-group">
+                <label class="info-label">Phone</label>
+                <span class="info-value" th:text="${student.phone}">+91 98765 43210</span>
+            </div>
+            <div class="info-group">
+                <label class="info-label">Tenant Type</label>
+                <span class="info-value">&#127891; Student</span>
+            </div>
+            <div class="info-group">
+                <label class="info-label">Current Status</label>
+                <span class="info-value" th:text="${student.studentVerificationStatus}">PENDING</span>
+            </div>
+        </div>
+
+        <!-- Document Section -->
+        <div class="document-section">
+            <h2>ID Document Upload</h2>
+            <div th:if="${student.documentPath}" class="document-viewer">
+                <div style="text-align: center;">
+                    <p style="color: var(--muted); margin: 0 0 12px;">&#128196; Submitted Document</p>
+                    <div th:if="${student.documentPath.toLowerCase().endsWith('.pdf')}">
+                        <embed th:src="@{/admin/file/student/{userId}/{filename}(userId=${student.id}, filename=${documentFilename})}"
+                               type="application/pdf">
+                    </div>
+                    <div th:unless="${student.documentPath.toLowerCase().endsWith('.pdf')}">
+                        <img th:src="@{/admin/file/student/{userId}/{filename}(userId=${student.id}, filename=${documentFilename})}"
+                             alt="Student Document">
+                    </div>
+                    <p class="document-name" th:text="${documentFilename}">document.pdf</p>
+                </div>
+            </div>
+            <div th:unless="${student.documentPath}" style="background: #f3f4f6; padding: 24px; border-radius: 8px; text-align: center; color: var(--muted);">
+                <p>No document submitted yet</p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div th:if="${student.studentVerificationStatus == 'PENDING'}" class="action-buttons">
+            <!-- Approve Button -->
+            <form method="POST" th:action="@{/admin/student/{id}/approve(id=${student.id})}" style="margin: 0;">
+                <button type="submit" class="btn btn-approve" onclick="return confirm('Approve this student verification')">&#10003; Approve Student</button>
+            </form>
+
+            <!-- Reject Button -->
+            <button type="button" class="btn btn-reject" onclick="toggleRejectionForm()">&#10007; Reject Student</button>
+        </div>
+
+        <!-- Rejection Form (Hidden by default) -->
+        <div id="rejectionForm" class="rejection-form">
+            <form method="POST" th:action="@{/admin/student/{id}/reject(id=${student.id})}" style="margin: 0;">
+                <div style="margin-bottom: 12px;">
+                    <label for="rejectionReason" style="display: block; font-weight: 600; margin-bottom: 8px;">Rejection Reason</label>
+                    <textarea id="rejectionReason" name="rejectionReason" placeholder="Please explain why this student verification is being rejected..." required></textarea>
+                </div>
+                <button type="submit" onclick="return confirm('Reject this student verification')">Confirm Rejection</button>
+                <button type="button" class="cancel" onclick="toggleRejectionForm()">Cancel</button>
+            </form>
+        </div>
+
+        <!-- Already Reviewed Message -->
+        <div th:if="${student.studentVerificationStatus != 'PENDING'}" style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-top: 24px; color: var(--muted);">
+            <p style="margin: 0;">&#10003; This student has already been reviewed and their status cannot be changed.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleRejectionForm() {
+    const form = document.getElementById('rejectionForm');
+    form.classList.toggle('active');
+    if (form.classList.contains('active')) {
+        document.getElementById('rejectionReason').focus();
+    }
+}
+</script>
+    <script src="/js/chatbot-widget.js"></script>
+</body>
+</html>
+
+
+
+

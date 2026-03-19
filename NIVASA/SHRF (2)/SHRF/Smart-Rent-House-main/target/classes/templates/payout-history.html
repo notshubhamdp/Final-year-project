@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Payout Tracking</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/images/nivasa-logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/payout-history.css">
+    
+    <link rel="stylesheet" href="/css/professional-theme.css">
+        <link rel="stylesheet" href="/css/chatbot-widget.css">
+<link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+<div class="page">
+    <div class="topbar">
+        <h2>Landlord Payout Tracking</h2>
+        <a class="back-link" href="/landlord-dashboard">Back to Dashboard</a>
+    </div>
+    <div class="actions">
+        <form method="post" action="/payment/connect/onboard">
+            <button type="submit" class="btn primary">Connect / Refresh Stripe Bank Setup</button>
+        </form>
+    </div>
+    <p class="alert success" th:if="${message}" th:text="${message}"></p>
+    <p class="alert error" th:if="${error}" th:text="${error}"></p>
+
+    <div class="card">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>Payment ID</th>
+                    <th>Property ID</th>
+                    <th>Amount</th>
+                    <th>Payout Status</th>
+                    <th>Scheduled</th>
+                    <th>Processed</th>
+                    <th>Reference</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${payouts == null or #lists.isEmpty(payouts)}">
+                    <td colspan="8" class="empty">No payouts found.</td>
+                </tr>
+                <tr th:each="p : ${payouts}">
+                    <td th:text="${p.id}"></td>
+                    <td th:text="${propertyPublicIdMap[p.propertyId]}"></td>
+                    <td th:text="${'INR ' + #numbers.formatDecimal(p.amount, 0, 'COMMA', 2, 'POINT')}"></td>
+                    <td><span class="status-pill" th:text="${p.payoutStatus}"></span></td>
+                    <td th:text="${p.payoutScheduledAt}"></td>
+                    <td th:text="${p.payoutProcessedAt != null  p.payoutProcessedAt : '-'}"></td>
+                    <td th:text="${p.payoutReference != null  p.payoutReference : '-'}"></td>
+                    <td>
+                        <form th:if="${p.payoutStatus == 'PENDING' or p.payoutStatus == 'SCHEDULED'}"
+                              th:action="@{'/payment/payouts/' + ${p.id} + '/settle'}"
+                              method="post">
+                            <button type="submit" class="btn primary">Settle to Bank</button>
+                        </form>
+                        <span th:if="${p.payoutStatus == 'PAID'}">Settled</span>
+                        <span th:if="${p.payoutStatus == 'HOLD'}">On Hold</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+    <script src="/js/chatbot-widget.js"></script>
+</body>
+</html>
+
+
+

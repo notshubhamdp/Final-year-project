@@ -1,0 +1,431 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Contact Landlord</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --muted: #6b7280;
+            --light: #f9fafb;
+            --lighter: #f3f4f6;
+            --border: #e5e7eb;
+            --bg: #f6f8fb;
+            --text: #1f2937;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, var(--lighter) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 32px 16px;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 24px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .back-link:hover {
+            background: var(--lighter);
+            color: var(--primary-dark);
+        }
+        
+        .card {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .card-header {
+            margin-bottom: 28px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 20px;
+        }
+        
+        .card h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .card h2 i {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+        
+        .property-info {
+            background: var(--lighter);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .property-info h3 {
+            font-size: 1.1rem;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        
+        .property-info p {
+            margin: 6px 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+        
+        .landlord-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            margin-bottom: 24px;
+        }
+        
+        .landlord-avatar {
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .landlord-details h4 {
+            margin: 0 0 4px;
+            color: var(--text);
+            font-weight: 700;
+        }
+        
+        .landlord-details p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+        
+        .form-section {
+            margin-bottom: 24px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 700;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+        
+        label i {
+            margin-right: 6px;
+            color: var(--primary);
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 140px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            transition: all 0.2s;
+            color: var(--text);
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .query-templates {
+            margin-bottom: 20px;
+        }
+        
+        .query-templates label {
+            margin-bottom: 10px;
+        }
+        
+        .template-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        
+        .template-btn {
+            padding: 10px 14px;
+            border: 2px solid var(--border);
+            background: white;
+            color: var(--text);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .template-btn:hover {
+            border-color: var(--primary);
+            background: var(--lighter);
+            color: var(--primary);
+        }
+        
+        .template-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .template-btn i {
+            margin-right: 6px;
+        }
+        
+        .character-count {
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+        }
+        
+        button[type="submit"],
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border-radius: 8px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        
+        button[type="submit"]:hover,
+        .button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        
+        button[type="submit"]:active,
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .button-back {
+            background: var(--muted);
+        }
+        
+        .button-back:hover {
+            background: #4b5563;
+        }
+        
+        .message-alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            border-left: 4px solid;
+        }
+        
+        .message-alert i {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        .message-alert.success {
+            background: #dcfce7;
+            color: #166534;
+            border-left-color: var(--success);
+        }
+        
+        .message-alert.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left-color: var(--danger);
+        }
+        
+        .message-alert.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left-color: var(--primary);
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 16px; }
+            .card { padding: 20px; }
+            .card h2 { font-size: 1.5rem; }
+            .template-buttons { grid-template-columns: 1fr; }
+            .actions { flex-direction: column; }
+            button[type="submit"], .button { width: 100%; }
+        }
+    </style>
+    
+    <link rel="stylesheet" href="/css/professional-theme.css">
+        <link rel="stylesheet" href="/css/chatbot-widget.css">
+<link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+    <div class="container">
+        <a th:href="@{/property/{id}(id=${propertyPublicId})}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Property
+        </a>
+        
+        <div class="card">
+            <div class="card-header">
+                <h2>
+                    <i class="fas fa-comments"></i> Contact Landlord
+                </h2>
+                <p th:text="'Inquiry for: ' + ${property.name}" style="margin: 0; color: var(--muted); font-weight: 500;">
+                    Inquiry for: Property Name
+                </p>
+            </div>
+            
+            <!-- Landlord Info -->
+            <div th:if="${landlord != null}" class="landlord-info">
+                <div class="landlord-avatar" th:text="${landlord.firstName.charAt(0)}">L</div>
+                <div class="landlord-details">
+                    <h4 th:text="${landlord.firstName + ' ' + landlord.lastName}">Landlord Name</h4>
+                    <p>
+                        <i class="fas fa-phone"></i>
+                        <span th:text="${landlord.phone != null  landlord.phone : 'Not provided'}">Phone Number</span>
+                    </p>
+                </div>
+            </div>
+            
+            <form method="post" th:action="@{/contact-landlord}">
+                <input type="hidden" name="propertyId" th:value="${propertyPublicId}" />
+                
+                <!-- Quick Query Templates -->
+                <div class="query-templates">
+                    <label>
+                        <i class="fas fa-lightning-bolt"></i> Quick Queries
+                    </label>
+                    <div class="template-buttons">
+                        <button type="button" class="template-btn" onclick="setMessage('Hi, I\'m interested in your property. Please share more details.')">
+                            <i class="fas fa-star"></i> General Interest
+                        </button>
+                        <button type="button" class="template-btn" onclick="setMessage('When is this property available for move-in Can we schedule a viewing')">
+                            <i class="fas fa-calendar"></i> Availability
+                        </button>
+                        <button type="button" class="template-btn" onclick="setMessage('What utilities are included in the rent Are there any additional charges')">
+                            <i class="fas fa-receipt"></i> Charges & Utilities
+                        </button>
+                        <button type="button" class="template-btn" onclick="setMessage('Can we discuss the lease terms and house rules Please share the details.')">
+                            <i class="fas fa-file-contract"></i> Lease Terms
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Message Textarea -->
+                <div class="form-section">
+                    <label for="message">
+                        <i class="fas fa-envelope"></i> Your Message
+                    </label>
+                    <textarea 
+                        id="message" 
+                        name="message" 
+                        required 
+                        placeholder="Type your inquiry here..."
+                        onkeyup="updateCharCount()"
+                    >Hi, I'm interested in your property. Please share more details.</textarea>
+                    <div class="character-count">
+                        <span id="charCount">78</span> characters
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="actions">
+                    <button type="submit" class="button">
+                        <i class="fas fa-paper-plane"></i> Send Message
+                    </button>
+                    <a th:href="@{/property/{id}(id=${propertyPublicId})}" class="button button-back">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        function setMessage(text) {
+            const textarea = document.getElementById('message');
+            textarea.value = text;
+            textarea.focus();
+            updateCharCount();
+            
+            // Visual feedback
+            document.querySelectorAll('.template-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.template-btn').classList.add('active');
+        }
+        
+        function updateCharCount() {
+            const textarea = document.getElementById('message');
+            const count = textarea.value.length;
+            document.getElementById('charCount').textContent = count;
+        }
+        
+        // Initialize character count on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCharCount();
+        });
+    </script>
+    <script src="/js/chatbot-widget.js"></script>
+</body>
+</html>
+
+
+
+

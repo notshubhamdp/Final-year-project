@@ -1,0 +1,105 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Register - NIVASA</title>
+    <style>
+        :root{--bg:#f6f8fb;--card:#ffffff;--accent:#4f46e5;--muted:#6b7280}
+        html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#eef2ff 0%, #f8fafc 100%);color:#0f172a}
+        .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:32px}
+        .card{background:var(--card);border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,0.08);display:flex;overflow:hidden;max-width:980px;width:100%}
+        .left{flex:1;padding:48px;min-width:320px}
+        .right{flex:1;background:linear-gradient(180deg,rgba(79,70,229,0.06),transparent);padding:48px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+        h1{margin:0 0 8px;font-size:1.5rem}
+        p.lead{margin:0 0 20px;color:var(--muted)}
+        form{width:100%;max-width:420px}
+        .field{display:flex;flex-direction:column;margin-bottom:14px}
+        label{font-size:.85rem;margin-bottom:6px;color:var(--muted)}
+        input[type="text"],input[type="email"],input[type="password"]{padding:12px 14px;border-radius:10px;border:1px solid #e6e9ef;background:#fbfdff;font-size:1rem;outline:none}
+        input:focus{box-shadow:0 6px 18px rgba(79,70,229,0.12);border-color:var(--accent)}
+        .btn{display:inline-block;padding:12px 18px;border-radius:10px;background:var(--accent);color:white;border:none;font-weight:600;cursor:pointer}
+        .secondary{background:transparent;color:var(--accent);border:1px solid rgba(79,70,229,0.12)}
+        .small{font-size:.9rem;color:var(--muted);margin-top:12px}
+        .logo{font-weight:700;color:var(--accent);letter-spacing:.3px}
+        @media (max-width:800px){.card{flex-direction:column}.right{padding:28px}.left{padding:28px}}
+        .alert{padding:10px 12px;border-radius:8px;margin-bottom:12px}
+        .alert-success{background:#ecfdf5;color:#065f46}
+        .alert-error{background:#fff1f2;color:#9f1239}
+        .privacy-notice{padding:12px;border-radius:8px;background:#fef3c7;border-left:4px solid #f59e0b;color:#92400e;margin-bottom:16px;font-size:0.9rem}
+    </style>
+    <link rel='stylesheet' href='/css/register.css'>
+    <link rel="icon" href="/images/nivasa-logo.svg" type="image/svg+xml">
+        
+    <link rel="stylesheet" href="/css/professional-theme.css">
+        <link rel="stylesheet" href="/css/chatbot-widget.css">
+<link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <div class="left">
+            <div class="logo" style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+                <img src="/images/nivasa-logo.svg" alt="NIVASA" style="width: 32px; height: 32px;">
+                <span>NIVASA</span>
+            </div>
+            <h1>Create your account</h1>
+            <p class="lead">Join NIVASA and find your perfect home. Live your peace.</p>
+
+            <div th:if="${message}" class="alert alert-success">
+                <p th:text="${message}"></p>
+            </div>
+            <div th:if="${error}" class="alert alert-error">
+                <p th:text="${error}"></p>
+            </div>
+
+            <!-- Privacy & Broker Notice -->
+            <div class="privacy-notice">
+                <strong>&#9888;&#65039; Important:</strong> Brokers, agents, and intermediaries are not allowed on this platform. Only direct landlord-tenant transactions are permitted. Users found violating this policy will be banned.
+            </div>
+
+            <form th:method="post" th:action="@{/register}" th:object="${user}">
+                <div class="field">
+                    <label for="firstName">First name</label>
+                    <input type="text" th:field="*{firstName}" id="firstName" placeholder="First name" required autofocus />
+                </div>
+                <div class="field">
+                    <label for="lastName">Last name</label>
+                    <input type="text" th:field="*{lastName}" id="lastName" placeholder="Last name" required />
+                </div>
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input type="email" th:field="*{email}" id="email" placeholder="you@domain.com" required />
+                </div>
+                <div class="field">
+                    <label for="phone">Mobile Number</label>
+                    <input type="text" th:field="*{phone}" id="phone" placeholder="Enter your mobile number" required pattern="[0-9]{10}" title="Please enter a valid 10-digit mobile number" />
+                    <span th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="error-message" style="color: #ef4444; font-size: 0.875rem; margin-top: 4px; display: block;"></span>
+                </div>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input type="password" th:field="*{password}" id="password" placeholder="Choose a strong password" required />
+                </div>
+                <div class="field">
+                    <label for="confirmPassword">Confirm password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm password" required />
+                </div>
+                <div style="display:flex;gap:12px;align-items:center">
+                    <button class="btn" type="submit">Create account</button>
+                    <a th:href="@{/login}" class="secondary btn" style="padding:10px 14px">Sign in</a>
+                </div>
+                <p class="small">By creating an account you agree to our terms. We respect your privacy.</p>
+            </form>
+        </div>
+        <div class="right">
+            <!-- Local SVG illustration added: /static/images/homes-illustration.svg -->
+            <img th:src="@{/images/homes-illustration.svg}" src="/images/homes-illustration.svg" alt="Homes illustration" style="width:100%;border-radius:10px;box-shadow:0 6px 20px rgba(15,23,42,0.06)" />
+        </div>
+    </div>
+</div>
+    <script src="/js/chatbot-widget.js"></script>
+</body>
+</html>
+
+
+

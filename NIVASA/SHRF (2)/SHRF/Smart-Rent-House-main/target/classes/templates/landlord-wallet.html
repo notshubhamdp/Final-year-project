@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NIVASA Wallet - Landlord</title>
+    <style>
+        :root{--accent:#4f46e5;--muted:#6b7280;--danger:#ef4444;--card:#ffffff}
+        html,body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#eef2ff 0%, #f8fafc 100%);color:#0f172a;min-height:100vh}
+        .navbar{background:var(--card);padding:16px 32px;box-shadow:0 2px 8px rgba(15,23,42,0.04);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+        .logo{font-weight:700;color:var(--accent);font-size:1.1rem;display:flex;align-items:center;gap:8px}
+        .nav-links{display:flex;gap:24px;align-items:center}
+        .nav-links a{color:var(--accent);text-decoration:none;font-weight:500}
+        .logout-btn{background:var(--danger);color:white;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.9rem}
+        .container{max-width:1100px;margin:0 auto;padding:32px}
+        h1{font-size:2rem;margin:0 0 8px}
+        .lead{color:var(--muted);margin:0 0 24px}
+        .section{background:var(--card);padding:24px;border-radius:12px;box-shadow:0 2px 8px rgba(15,23,42,0.06)}
+        .wallet-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:16px}
+        .wallet-card{padding:14px;border-radius:10px;background:#f8fafc;border:1px solid #e5e7eb}
+        .wallet-card .label{font-size:0.85rem;color:var(--muted)}
+        .wallet-card .value{font-size:1.3rem;font-weight:700;color:#0f172a;margin-top:4px}
+        .wallet-list{display:grid;grid-template-columns:1fr;gap:10px}
+        .wallet-item{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:12px;border:1px solid #e5e7eb;border-radius:10px;background:#ffffff}
+        .wallet-left{display:flex;flex-direction:column;gap:3px}
+        .wallet-title{font-weight:600}
+        .wallet-meta{font-size:0.88rem;color:var(--muted)}
+        .wallet-right{text-align:right}
+        .wallet-amount{font-weight:700}
+        .wallet-time{font-size:0.85rem;color:var(--muted);margin-top:2px}
+        .empty-state{text-align:center;padding:40px;color:var(--muted)}
+        .empty-icon{font-size:3rem;margin-bottom:12px}
+        @media (max-width:768px){.container{padding:16px}.wallet-item{flex-direction:column}.wallet-right{text-align:left}.nav-links{gap:12px}}
+    </style>
+    
+    <link rel="stylesheet" href="/css/professional-theme.css">
+        <link rel="stylesheet" href="/css/chatbot-widget.css">
+<link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+<div class="navbar">
+    <div class="logo">
+        <img src="/images/nivasa-logo.svg" alt="NIVASA" style="width: 28px; height: 28px;">
+        <span>NIVASA</span>
+    </div>
+    <div class="nav-links">
+        <a th:href="@{/landlord-dashboard}">Dashboard</a>
+        <a th:href="@{/landlord/my-properties}">My Properties</a>
+        <a th:href="@{/messages/conversations}">Messages</a>
+        <a th:href="@{/logout-landlord}" class="logout-btn">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    <h1 th:text="'NIVASA Wallet - ' + ${user.firstName}">NIVASA Wallet</h1>
+    <p class="lead">Track all tenant payments received for your properties.</p>
+
+    <div class="section">
+        <div class="wallet-grid">
+            <div class="wallet-card">
+                <div class="label">Total Received</div>
+                <div class="value" th:text="'Rs ' + ${#numbers.formatDecimal(walletTotalAmount, 1, 0)}">Rs 0</div>
+            </div>
+            <div class="wallet-card">
+                <div class="label">Total Payments</div>
+                <div class="value" th:text="${walletPaymentCount}">0</div>
+            </div>
+            <div class="wallet-card">
+                <div class="label">This Month Received</div>
+                <div class="value" th:text="'Rs ' + ${#numbers.formatDecimal(thisMonthAmount, 1, 0)}">Rs 0</div>
+            </div>
+            <div class="wallet-card">
+                <div class="label">This Month Payments</div>
+                <div class="value" th:text="${thisMonthPaymentCount}">0</div>
+            </div>
+        </div>
+
+        <div class="wallet-list" th:if="${!#lists.isEmpty(walletPayments)}">
+            <div class="wallet-item" th:each="entry : ${walletPayments}">
+                <div class="wallet-left">
+                    <div class="wallet-title">
+                        <span th:text="${entry.propertyName}">Property Name</span>
+                        <span style="color:var(--muted)"> (#<span th:text="${entry.propertyId}">PID</span>)</span>
+                    </div>
+                    <div class="wallet-meta">
+                        Tenant: <strong th:text="${entry.tenantName}">Tenant</strong> |
+                        Type: <span th:text="${entry.paymentType}">ADVANCE</span> |
+                        Month: <span th:text="${entry.monthLabel}">January 2026</span>
+                    </div>
+                </div>
+                <div class="wallet-right">
+                    <div class="wallet-amount" th:text="'Rs ' + ${#numbers.formatDecimal(entry.amount, 1, 0)}">Rs 0</div>
+                    <div class="wallet-time" th:text="${entry.paidDate} + ' at ' + ${entry.paidTime}">01 Jan 2026 at 11:30 AM</div>
+                </div>
+            </div>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(walletPayments)}">
+            <div class="empty-icon">&#128179;</div>
+            <h3>No payments in wallet yet</h3>
+            <p>When tenants pay, entries will appear here with date, time and month.</p>
+        </div>
+    </div>
+</div>
+    <script src="/js/chatbot-widget.js"></script>
+</body>
+</html>
+
+
+

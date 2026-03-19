@@ -1,0 +1,362 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Landlord Dashboard - NIVASA</title>
+    <style>
+        :root{--accent:#4f46e5;--muted:#6b7280;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;--bg:#f6f8fb;--card:#ffffff}
+        html,body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#eef2ff 0%, #f8fafc 100%);color:#0f172a;min-height:100vh}
+        .navbar{background:var(--card);padding:16px 32px;box-shadow:0 2px 8px rgba(15,23,42,0.04);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+        .logo{font-weight:700;color:var(--accent);font-size:1.2rem}
+        .nav-links{display:flex;gap:24px;align-items:center}
+        .nav-links a{color:var(--accent);text-decoration:none;font-weight:500;transition:all 0.2s}
+        .nav-links a:hover{opacity:0.7}
+        .logout-btn{background:var(--danger);color:white;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.9rem}
+        .container{max-width:1200px;margin:0 auto;padding:32px}
+        h1{font-size:2rem;margin:0 0 8px}
+        .lead{color:var(--muted);margin:0 0 32px}
+        .dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-bottom:32px}
+        .stat-card{background:var(--card);padding:24px;border-radius:12px;box-shadow:0 2px 8px rgba(15,23,42,0.06)}
+        .stat-icon{font-size:2rem;margin-bottom:12px}
+        .stat-number{font-size:2rem;font-weight:700;color:var(--accent);margin:8px 0}
+        .stat-label{color:var(--muted);font-size:0.9rem}
+        .section{background:var(--card);padding:24px;border-radius:12px;box-shadow:0 2px 8px rgba(15,23,42,0.06);margin-bottom:24px}
+        .section h2{margin:0 0 16px;font-size:1.3rem;border-bottom:2px solid var(--accent);padding-bottom:12px}
+        .action-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+        .action-card{background:linear-gradient(135deg,var(--accent) 0%,#6366f1 100%);color:white;padding:24px;border-radius:12px;text-decoration:none;text-align:center;transition:all 0.3s}
+        .action-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(79,70,229,0.2)}
+        .action-card-icon{font-size:2.5rem;margin-bottom:12px}
+        .action-card-title{font-weight:600;margin:8px 0}
+        .action-card-desc{font-size:0.9rem;opacity:0.9}
+        .properties-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+        .property-item{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(15,23,42,0.06);transition:all 0.3s}
+        .property-item:hover{box-shadow:0 8px 24px rgba(15,23,42,0.12)}
+        .property-header{padding:16px;background:linear-gradient(135deg,var(--accent) 0%,#6366f1 100%);color:white}
+        .property-name{font-size:1.1rem;font-weight:600;margin:0}
+        .property-address{font-size:0.85rem;opacity:0.9;margin:4px 0 0}
+        .property-body{padding:16px}
+        .property-info{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+        .info-item{font-size:0.9rem}
+        .info-label{color:var(--muted);font-weight:600}
+        .info-value{color:#0f172a;font-weight:500;margin-top:2px}
+        .status-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.85rem;font-weight:600;margin-top:8px}
+        .status-pending{background:#fef3c7;color:#92400e}
+        .status-approved{background:#dcfce7;color:#166534}
+        .status-rejected{background:#fee2e2;color:#991b1b}
+        .empty-state{text-align:center;padding:40px;color:var(--muted)}
+        .empty-icon{font-size:3rem;margin-bottom:16px}
+        .quick-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+        .quick-stat{background:var(--card);padding:16px;border-radius:8px;border-left:4px solid var(--accent)}
+        .quick-stat-value{font-size:1.5rem;font-weight:700;color:var(--accent)}
+        .quick-stat-label{color:var(--muted);font-size:0.9rem;margin-top:4px}
+        .booking-list{display:grid;grid-template-columns:1fr;gap:12px}
+        .booking-item{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:14px;border:1px solid #e5e7eb;border-radius:10px;background:#f8fafc}
+        .booking-main{display:flex;flex-direction:column;gap:4px}
+        .booking-title{font-weight:600}
+        .booking-meta{font-size:0.9rem;color:var(--muted)}
+        .booking-amount{font-weight:700;color:#0f172a}
+        .booking-actions{display:flex;gap:8px}
+        .btn-approve{border:none;background:#16a34a;color:#fff;border-radius:8px;padding:7px 10px;font-weight:600;cursor:pointer}
+        .btn-reject{border:none;background:#dc2626;color:#fff;border-radius:8px;padding:7px 10px;font-weight:600;cursor:pointer}
+        .alert{padding:12px 16px;border-radius:8px;margin:0 0 16px}
+        .alert-success{background:#dcfce7;color:#166534}
+        .alert-error{background:#fee2e2;color:#991b1b}
+        .wallet-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:16px}
+        .wallet-card{padding:14px;border-radius:10px;background:#f8fafc;border:1px solid #e5e7eb}
+        .wallet-card .label{font-size:0.85rem;color:var(--muted)}
+        .wallet-card .value{font-size:1.3rem;font-weight:700;color:#0f172a;margin-top:4px}
+        .wallet-list{display:grid;grid-template-columns:1fr;gap:10px}
+        .wallet-item{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:12px;border:1px solid #e5e7eb;border-radius:10px;background:#ffffff}
+        .wallet-left{display:flex;flex-direction:column;gap:3px}
+        .wallet-title{font-weight:600}
+        .wallet-meta{font-size:0.88rem;color:var(--muted)}
+        .wallet-right{text-align:right}
+        .wallet-amount{font-weight:700}
+        .wallet-time{font-size:0.85rem;color:var(--muted);margin-top:2px}
+        .review-section{background:var(--card);padding:24px;border-radius:12px;box-shadow:0 2px 8px rgba(15,23,42,0.06);margin-bottom:24px}
+        .review-section h2{margin:0 0 12px;font-size:1.3rem;border-bottom:2px solid var(--accent);padding-bottom:12px}
+        .review-hint{color:var(--muted);margin:0 0 16px}
+        .review-form{display:grid;gap:12px}
+        .review-form select,.review-form textarea{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font:inherit}
+        .review-form textarea{min-height:110px;resize:vertical}
+        .review-submit{border:none;background:linear-gradient(135deg,var(--accent) 0%,#6366f1 100%);color:#fff;padding:10px 14px;border-radius:8px;font-weight:600;cursor:pointer}
+        .review-done{padding:12px;border-radius:10px;background:#f8fafc;border:1px solid #e5e7eb}
+        .review-stars{color:#f59e0b;font-weight:700}
+        .footer{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:white;padding:80px 32px;position:relative;overflow:hidden}
+        .footer::before{content:'';position:absolute;inset:0;background-image:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="footer-pattern" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="1" fill="rgba(79,70,229,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23footer-pattern)"/></svg>');opacity:0.3}
+        .footer-content{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:40px;margin-bottom:40px;position:relative;z-index:1}
+        .footer-section h4{font-size:1.2rem;margin-bottom:20px;color:#fff;font-weight:700;position:relative}
+        .footer-section h4::after{content:'';position:absolute;bottom:-8px;left:0;width:40px;height:3px;background:linear-gradient(135deg,var(--accent) 0%,#6366f1 100%);border-radius:2px}
+        .footer-section a{color:rgba(255,255,255,0.8);text-decoration:none;display:block;margin:10px 0;transition:all 0.3s;font-weight:500;position:relative}
+        .footer-section a::before{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:linear-gradient(135deg,var(--accent) 0%,#6366f1 100%);transition:width 0.3s}
+        .footer-section a:hover{color:white;transform:translateX(5px)}
+        .footer-section a:hover::before{width:100%}
+        .footer-bottom{border-top:2px solid rgba(255,255,255,0.1);padding-top:40px;text-align:center;color:rgba(255,255,255,0.7);position:relative;z-index:1}
+        @media (max-width:768px){.container{padding:16px}.nav-links{gap:12px}.dashboard-grid{grid-template-columns:1fr}.action-grid{grid-template-columns:1fr}.properties-list{grid-template-columns:1fr}.booking-item{flex-direction:column;align-items:flex-start}.wallet-item{flex-direction:column}.wallet-right{text-align:left}.footer-content{grid-template-columns:1fr;gap:32px;text-align:center}.footer-section h4::after{display:none}}
+    </style>
+    <link rel='stylesheet' href='/css/landlord-dashboard.css'>
+    <link rel="icon" href="/images/nivasa-logo.svg" type="image/svg+xml">
+    
+    <link rel="stylesheet" href="/css/professional-theme.css">
+        <link rel="stylesheet" href="/css/chatbot-widget.css">
+<link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+<div class="navbar">
+    <div class="logo" style="display:flex;align-items:center;gap:8px;font-size:1.1rem">
+        <img src="/images/nivasa-logo.svg" alt="NIVASA" style="width: 32px; height: 32px;">
+        <span>NIVASA</span>
+    </div>
+    <div class="nav-links">
+        <a th:href="@{/landlord/my-properties}">My Properties</a>
+        <a th:href="@{/messages/conversations}">Messages</a>
+        <a href="/visits">Visits</a>
+        <a href="/payment/payouts">Payouts</a>
+        <a th:href="@{/logout-landlord}" class="logout-btn">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    <h1 th:text="'Welcome, ' + ${user.firstName} + '!'">Welcome, Landlord!</h1>
+    <p class="lead">Manage your properties and track rental activities</p>
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <div class="quick-stats">
+        <div class="quick-stat">
+            <div class="quick-stat-value" th:text="${totalProperties}">0</div>
+            <div class="quick-stat-label">Total Properties</div>
+        </div>
+        <div class="quick-stat">
+            <div class="quick-stat-value" th:text="${pendingCount}">0</div>
+            <div class="quick-stat-label">Pending Review</div>
+        </div>
+        <div class="quick-stat">
+            <div class="quick-stat-value" th:text="${approvedCount}">0</div>
+            <div class="quick-stat-label">Approved & Live</div>
+        </div>
+        <div class="quick-stat">
+            <div class="quick-stat-value" th:text="${rentedCount}">0</div>
+            <div class="quick-stat-label">Already Rented</div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="stat-card">
+            <div class="stat-icon">&#128203;</div>
+            <div class="stat-label">Active Listings</div>
+            <div class="stat-number" th:text="${totalProperties}">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">&#9203;</div>
+            <div class="stat-label">Pending Approval</div>
+            <div class="stat-number" th:text="${pendingCount}">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">&#10003;</div>
+            <div class="stat-label">Approved</div>
+            <div class="stat-number" th:text="${approvedCount}">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">&#127968;</div>
+            <div class="stat-label">Already Rented</div>
+            <div class="stat-number" th:text="${rentedCount}">0</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Quick Actions</h2>
+        <div class="action-grid">
+            <a th:href="@{/landlord/add-property}" class="action-card">
+                <div class="action-card-icon">&#10133;</div>
+                <div class="action-card-title">Add New Property</div>
+                <div class="action-card-desc">List a new property for rent</div>
+            </a>
+            <a th:href="@{/landlord/my-properties}" class="action-card" style="background:linear-gradient(135deg,var(--success) 0%,#059669 100%)">
+                <div class="action-card-icon">&#128203;</div>
+                <div class="action-card-title">My Properties</div>
+                <div class="action-card-desc">View and manage all listings</div>
+            </a>
+            <a th:href="@{/messages/conversations}" class="action-card" style="background:linear-gradient(135deg,var(--warning) 0%,#d97706 100%)">
+                <div class="action-card-icon">&#128172;</div>
+                <div class="action-card-title">Messages</div>
+                <div class="action-card-desc">Tenant inquiries and communications</div>
+            </a>
+            <a th:href="@{/profile}" class="action-card" style="background:linear-gradient(135deg,#8b5cf6 0%,#7c3aed 100%)">
+                <div class="action-card-icon">&#9881;</div>
+                <div class="action-card-title">Settings</div>
+                <div class="action-card-desc">Account and preferences</div>
+            </a>
+            <a th:href="@{/landlord-wallet}" class="action-card" style="background:linear-gradient(135deg,#0ea5e9 0%,#0284c7 100%)">
+                <div class="action-card-icon">&#128179;</div>
+                <div class="action-card-title">NIVASA Wallet</div>
+                <div class="action-card-desc">View received payments</div>
+            </a>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Booking Approvals</h2>
+        <div class="booking-list" th:if="${!#lists.isEmpty(pendingBookingApprovals)}">
+            <div class="booking-item" th:each="req : ${pendingBookingApprovals}">
+                <div class="booking-main">
+                    <div class="booking-title">
+                        <span th:text="${req.propertyName}">Property Name</span>
+                        <span style="color:var(--muted)"> (#<span th:text="${req.propertyId}">PID</span>)</span>
+                    </div>
+                    <div class="booking-meta">
+                        Requested by <strong th:text="${req.tenantName}">Tenant</strong>
+                        <span style="margin-left:12px" th:text="${req.requestedAt}">2026-01-01T12:00</span>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                    <div class="booking-amount" th:text="'Rs ' + ${#numbers.formatDecimal(req.amount, 1, 0)}">Rs 0</div>
+                    <div class="booking-actions">
+                        <form th:action="@{/landlord/booking/{id}/approve(id=${req.paymentId})}" method="post" style="margin:0">
+                            <button type="submit" class="btn-approve">Approve</button>
+                        </form>
+                        <form th:action="@{/landlord/booking/{id}/reject(id=${req.paymentId})}" method="post" style="margin:0">
+                            <button type="submit" class="btn-reject">Reject</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(pendingBookingApprovals)}">
+            <div class="empty-icon">&#9989;</div>
+            <h3>No pending booking requests</h3>
+            <p>New advance booking requests will appear here for approval.</p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Recent Bookings</h2>
+        <div class="booking-list" th:if="${!#lists.isEmpty(recentBookings)}">
+            <div class="booking-item" th:each="booking : ${recentBookings}">
+                <div class="booking-main">
+                    <div class="booking-title">
+                        <span th:text="${booking.propertyName}">Property Name</span>
+                        <span style="color:var(--muted)"> (#<span th:text="${booking.propertyId}">PID</span>)</span>
+                    </div>
+                    <div class="booking-meta">
+                        Booked by <strong th:text="${booking.tenantName}">Tenant</strong>
+                        <span style="margin-left:12px" th:text="${booking.bookedAt}">2026-01-01T12:00</span>
+                    </div>
+                </div>
+                <div class="booking-amount" th:text="'Rs ' + ${#numbers.formatDecimal(booking.amount, 1, 0)}">Rs 0</div>
+            </div>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(recentBookings)}">
+            <div class="empty-icon">&#128276;</div>
+            <h3>No bookings yet</h3>
+            <p>When a tenant completes an advance payment, it will appear here.</p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Your Properties</h2>
+        <div class="properties-list" th:if="${!#lists.isEmpty(recentProperties)}">
+            <div th:each="prop : ${recentProperties}" class="property-item">
+                <div class="property-header">
+                    <p class="property-name" th:text="${prop.name}">Property Name</p>
+                    <p class="property-address" th:text="${prop.address}">Address</p>
+                </div>
+                <div class="property-body">
+                    <div class="property-info">
+                        <div class="info-item">
+                            <div class="info-label">Price</div>
+                            <div class="info-value" th:text="'Rs ' + ${#numbers.formatDecimal(prop.price, 1, 0)}">Rs 0</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Status</div>
+                            <div class="info-value">
+                                <span th:if="${prop.verificationStatus == 'PENDING'}" class="status-badge status-pending">Pending</span>
+                                <span th:if="${prop.verificationStatus == 'APPROVED'}" class="status-badge status-approved">Approved</span>
+                                <span th:if="${prop.verificationStatus == 'REJECTED'}" class="status-badge status-rejected">Rejected</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a th:href="@{/landlord/my-properties}" class="btn" style="margin-top:12px;background:var(--accent);color:white;border-radius:6px;padding:8px 12px;">Manage</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="properties-list" th:if="${#lists.isEmpty(recentProperties)}">
+            <div style="grid-column:1/-1">
+                <div class="empty-state">
+                    <div class="empty-icon">&#127968;</div>
+                    <h3>No properties listed yet</h3>
+                    <p>Start by adding your first property to begin earning rental income</p>
+                    <a th:href="@{/landlord/add-property}" style="display:inline-block;margin-top:16px;padding:12px 24px;background:var(--accent);color:white;border-radius:8px;text-decoration:none;font-weight:600">Add Your First Property</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>How It Works</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+            <div style="padding:16px;background:#f9fafb;border-radius:8px">
+                <div style="font-weight:700;color:var(--accent);margin-bottom:8px">1. Add Property</div>
+                <p style="margin:0;color:var(--muted);font-size:0.9rem">Fill in property details, upload images and ownership documents</p>
+            </div>
+            <div style="padding:16px;background:#f9fafb;border-radius:8px">
+                <div style="font-weight:700;color:var(--accent);margin-bottom:8px">2. Verification</div>
+                <p style="margin:0;color:var(--muted);font-size:0.9rem">Our admin team reviews your documents and verifies ownership</p>
+            </div>
+            <div style="padding:16px;background:#f9fafb;border-radius:8px">
+                <div style="font-weight:700;color:var(--accent);margin-bottom:8px">3. Go Live</div>
+                <p style="margin:0;color:var(--muted);font-size:0.9rem">Once approved, your property appears in tenant listings</p>
+            </div>
+            <div style="padding:16px;background:#f9fafb;border-radius:8px">
+                <div style="font-weight:700;color:var(--accent);margin-bottom:8px">4. Manage</div>
+                <p style="margin:0;color:var(--muted);font-size:0.9rem">Receive inquiries, communicate with tenants, manage bookings</p>
+            </div>
+        </div>
+    </div>
+    <div class="review-section">
+        <h2>Rate NIVASA</h2>
+        <p class="review-hint">Share a one-time review about your experience with the app.</p>
+        <form th:if="${canSubmitReview}" th:action="@{/reviews/submit}" method="post" class="review-form">
+            <select name="rating" required>
+                <option value="">Select rating</option>
+                <option value="5">5 - Excellent</option>
+                <option value="4">4 - Very Good</option>
+                <option value="3">3 - Good</option>
+                <option value="2">2 - Fair</option>
+                <option value="1">1 - Poor</option>
+            </select>
+            <textarea name="reviewText" maxlength="500" placeholder="Write a short review..." required></textarea>
+            <button type="submit" class="review-submit">Submit Review</button>
+        </form>
+        <div th:if="${!canSubmitReview}" class="review-done">
+            <div class="review-stars" th:text="${'Your rating: ' + existingReview.rating + '/5'}">Your rating: 5/5</div>
+            <p style="margin:8px 0 0;color:var(--muted)" th:text="${existingReview.reviewText}">Thank you for your review.</p>
+        </div>
+    </div>
+    </div>
+    <section id="footer" class="About">
+    <footer class="footer">
+        <div class="footer-content">
+        <div class="footer-section">
+            <h4>Support</h4>
+            <a href="/faq">Frequently Asked Questions</a>
+            <a href="/contact-us">Contact Us</a>
+            <a href="/privacy-policy">Privacy Policy</a>
+            <a href="/terms">Terms & Conditions</a>
+        </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Smart Rent House. All rights reserved.</p>
+        </div>
+    </footer>
+    </section>
+    <script src="/js/chatbot-widget.js"></script>
+</body>
+</html>
+
+
+
+
+

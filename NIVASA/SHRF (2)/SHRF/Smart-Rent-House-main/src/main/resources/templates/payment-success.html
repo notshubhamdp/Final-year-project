@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful - NIVASA</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/payment.css">
+    
+    <link rel="stylesheet" href="/css/professional-theme.css">
+        <link rel="stylesheet" href="/css/chatbot-widget.css">
+<link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav class="navbar">
+                <div class="nav-brand">
+                    <a href="/home">NIVASA</a>
+                </div>
+                <div class="nav-links">
+                    <a href="/home">Home</a>
+                    <a href="/tenant/profile">Profile</a>
+                    <a href="/payment/history">Payment History</a>
+                    <a href="/logout-tenant">Logout</a>
+                </div>
+            </nav>
+        </header>
+
+        <main class="payment-main">
+            <div class="payment-container success-container">
+                <div class="success-icon">
+                    &#9989;
+                </div>
+
+                <h1>Payment Successful!</h1>
+
+                <div class="success-message">
+                    <p>Your payment has been processed successfully.</p>
+                    <p>The landlord will be notified and will contact you soon to finalize the booking.</p>
+                </div>
+
+                <div class="property-summary">
+                    <h2>Booking Details</h2>
+                    <div class="property-info">
+                        <h3 th:text="${property.name}">Property Name</h3>
+                        <p><strong>Address:</strong> <span th:text="${property.address}">Address</span></p>
+                        <p><strong>Owner:</strong> <span th:text="${property.ownerName}">Owner Name</span></p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h2>Next Steps</h2>
+                    <ul>
+                        <li>The landlord will review your booking request</li>
+                        <li>You will receive a confirmation message via email</li>
+                        <li>Contact the landlord to arrange property visit and documentation</li>
+                        <li>Complete any remaining formalities as required</li>
+                    </ul>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="/home" class="btn btn-primary">Browse More Properties</a>
+                    <a th:if="${payment != null}" th:href="'/payment/download-receipt/' + ${payment.id}" class="btn btn-primary">Download Receipt</a>
+                    <a href="/payment/history" class="btn btn-primary">View Payment History</a>
+                    <a href="/messages/conversations" class="btn btn-primary">Contact Landlord</a>
+                </div>
+
+                <div class="support-info">
+                    <p>Need help <a href="/contact">Contact Support</a></p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/chatbot-widget.js"></script>
+</body>
+</html>
+
+

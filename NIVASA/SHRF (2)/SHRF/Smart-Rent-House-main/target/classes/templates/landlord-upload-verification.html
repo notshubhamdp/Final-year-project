@@ -1,0 +1,363 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Name Verification - Smart Rent House</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input[type="file"],
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input[type="file"]:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: #f5f5f5;
+            border: 2px dashed #667eea;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-input-label:hover {
+            background: #e8e8ff;
+            border-color: #764ba2;
+        }
+
+        .file-input-label.active {
+            background: #e8e8ff;
+            border-color: #764ba2;
+        }
+
+        .file-input-label svg {
+            width: 32px;
+            height: 32px;
+            margin-right: 12px;
+            color: #667eea;
+        }
+
+        .file-input-label span {
+            color: #667eea;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .file-input-label small {
+            display: block;
+            color: #999;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-name {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-radius: 4px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .file-name.show {
+            display: block;
+        }
+
+        .info-box {
+            background: #f0f7ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .info-box h4 {
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            color: #666;
+        }
+
+        .info-box li {
+            margin-bottom: 5px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .link-section {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .link-section a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .link-section a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .loading.show {
+            display: inline-block;
+        }
+    </style>
+    <link rel='stylesheet' href='/css/landlord-upload-verification.css'>
+    <script src='/js/landlord-upload-verification_1.js'></script>
+        
+    <link rel="stylesheet" href="/css/professional-theme.css">
+        <link rel="stylesheet" href="/css/chatbot-widget.css">
+<link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Name Verification Document</h1>
+            <p>Upload your identification to verify your name</p>
+        </div>
+
+        <!-- Success Message -->
+        <div th:if="${param.message}" class="alert alert-success" th:text="${param.message}">
+            Success message here
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${param.error}" class="alert alert-error" th:text="${param.error}">
+            Error message here
+        </div>
+
+        <div class="info-box">
+            <h4>&#128203; Accepted Documents</h4>
+            <ul>
+                <li>Aadhar Card (with name clearly visible)</li>
+                <li>PAN Card</li>
+                <li>Passport</li>
+                <li>Driver's License</li>
+                <li>Any government-issued ID</li>
+            </ul>
+        </div>
+
+        <form th:action="@{/landlord/upload-verification-document}" method="post" enctype="multipart/form-data" id="verificationForm">
+            <div class="form-group">
+                <label for="document">Upload Document (PDF or Image)</label>
+                <div class="file-input-wrapper">
+                    <label for="document" class="file-input-label" id="fileLabel">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <div>
+                            <span>Click to upload or drag and drop</span>
+                            <small>PDF or Image (JPG, PNG, GIF) up to 10MB</small>
+                        </div>
+                    </label>
+                    <input type="file" id="document" name="document" accept=".pdf,.jpg,.jpeg,.png,.gif" required>
+                </div>
+                <div class="file-name" id="fileName"></div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">
+                <span id="submitText">Upload Document</span>
+                <span class="loading show" id="loadingSpinner">Uploading...</span>
+            </button>
+        </form>
+
+        <div class="link-section">
+            <a th:href="@{/landlord/dashboard}">&#8592; Back to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        // File input handler
+        const fileInput = document.getElementById('document');
+        const fileLabel = document.getElementById('fileLabel');
+        const fileName = document.getElementById('fileName');
+        const submitBtn = document.getElementById('submitBtn');
+        const submitText = document.getElementById('submitText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        // Drag and drop functionality
+        fileLabel.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileLabel.classList.add('active');
+        });
+
+        fileLabel.addEventListener('dragleave', () => {
+            fileLabel.classList.remove('active');
+        });
+
+        fileLabel.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileLabel.classList.remove('active');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                updateFileName();
+            }
+        });
+
+        // File input change handler
+        fileInput.addEventListener('change', updateFileName);
+
+        function updateFileName() {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                fileName.textContent = '&#10003; ' + file.name + ' (' + formatFileSize(file.size) + ')';
+                fileName.classList.add('show');
+            } else {
+                fileName.classList.remove('show');
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Form submission
+        document.getElementById('verificationForm').addEventListener('submit', function() {
+            submitBtn.disabled = true;
+            submitText.style.display = 'none';
+            loadingSpinner.classList.add('show');
+        });
+    </script>
+    <script src="/js/chatbot-widget.js"></script>
+</body>
+</html>
+
+
+
+

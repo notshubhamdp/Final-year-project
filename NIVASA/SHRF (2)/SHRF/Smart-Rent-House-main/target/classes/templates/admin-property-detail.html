@@ -1,0 +1,633 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Property Details - Admin Review - Smart Rent House</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --primary-light: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #0ea5e9;
+            --muted: #6b7280;
+            --light: #f9fafb;
+            --lighter: #f3f4f6;
+            --border: #e5e7eb;
+            --bg: #f6f8fb;
+            --text: #1f2937;
+            --text-secondary: #6b7280;
+        }
+        
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 0 32px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            height: 70px;
+        }
+        
+        .navbar .logo {
+            font-weight: 700;
+            color: white;
+            font-size: 1.3rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .admin-badge {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-links a:hover {
+            color: white;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+        
+        /* Back Link */
+        .back-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .back-link:hover {
+            background: var(--lighter);
+            color: var(--primary-dark);
+        }
+        
+        /* Page Header */
+        .page-header {
+            margin-bottom: 32px;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        
+        .lead {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 32px;
+        }
+        
+        /* Sections */
+        .section {
+            background: white;
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+        
+        .section h2 {
+            margin: 0 0 16px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 12px;
+        }
+        
+        /* Property Info */
+        .property-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        .info-item {
+            padding: 12px 0;
+        }
+        
+        .info-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        /* Gallery */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+        
+        .gallery-item {
+            width: 100%;
+            height: 150px;
+            background: var(--lighter);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            border: 2px solid var(--border);
+            transition: all 0.2s;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .gallery-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.2);
+            border-color: var(--primary);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Documents */
+        .document-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .document-item {
+            padding: 12px;
+            background: var(--lighter);
+            margin-bottom: 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+            border-left: 3px solid var(--primary);
+        }
+        
+        .document-item:hover {
+            background: #e5e7eb;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+        }
+        
+        .document-item a {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 600;
+            flex: 1;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+        
+        .btn-approve {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-approve:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-reject {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-reject:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-back {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-back:hover {
+            background: var(--primary-dark);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        
+        /* Landlord Card */
+        .landlord-card {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .landlord-card p {
+            margin: 0 8px 0 0;
+            color: var(--text);
+        }
+        
+        .landlord-card .info-label {
+            text-transform: lowercase;
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-approved {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.2s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        /* Messages */
+        .message {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 4px solid;
+        }
+        
+        .message-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left-color: #ef4444;
+        }
+        
+        /* Divider */
+        .divider {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 16px; }
+            .navbar { padding: 0 16px; }
+            h1 { font-size: 1.5rem; }
+            .grid { grid-template-columns: 1fr; }
+            .property-info { grid-template-columns: 1fr; }
+            .gallery { grid-template-columns: repeat(2, 1fr); }
+            .action-buttons { flex-direction: column; }
+            .btn { width: 100%; }
+        }
+    </style>
+    
+    <link rel="stylesheet" href="/css/professional-theme.css">
+        <link rel="stylesheet" href="/css/chatbot-widget.css">
+<link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">
+            <i class="fas fa-building"></i>
+            <span>NIVASA</span>
+            <span class="admin-badge">ADMIN PANEL</span>
+        </div>
+        <div class="nav-links">
+            <a th:href="@{/admin-dashboard}"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a th:href="@{/admin/pending-properties}"><i class="fas fa-hourglass"></i> Pending</a>
+            <a th:href="@{/admin/approved-properties}"><i class="fas fa-check-circle"></i> Approved</a>
+            <a th:href="@{/logout}" style="color: #fee2e2;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <a th:href="@{/admin/pending-properties}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Pending Properties
+        </a>
+
+        <div class="page-header">
+            <h1 th:text="${property.name}">
+                <i class="fas fa-home"></i>
+            </h1>
+            <p class="lead">
+                <i class="fas fa-map-marker-alt"></i>
+                <span th:text="${property.address}">Address</span>
+            </p>
+        </div>
+
+        <div class="grid">
+            <!-- Left Column: Property Details -->
+            <div>
+                <!-- Property Information -->
+                <div class="section">
+                    <h2>
+                        <i class="fas fa-info-circle"></i> Property Information
+                    </h2>
+                    <div class="property-info">
+                        <div class="info-item">
+                            <div class="info-label">Owner Name</div>
+                            <div class="info-value" th:text="${property.ownerName}">Owner Name</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Monthly Rent</div>
+                            <div class="info-value" th:text="'&#8377;' + ${#numbers.formatDecimal(property.price, 1, 0)}">&#8377;50,000</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Full Address</div>
+                            <div class="info-value" th:text="${property.address}">Address</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">City</div>
+                            <div class="info-value" th:text="${property.city}">City</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">State</div>
+                            <div class="info-value" th:text="${property.state}">State</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Pin Code</div>
+                            <div class="info-value" th:text="${property.pincode}">400001</div>
+                        </div>
+                    </div>
+                    
+                    <div class="divider">
+                        <div class="info-label"><i class="fas fa-check-circle"></i> Status</div>
+                        <div class="info-value" style="margin-top: 12px;">
+                            <span th:if="${property.verificationStatus == 'PENDING'}" class="status-badge status-pending">
+                                <i class="fas fa-clock"></i> Pending Verification
+                            </span>
+                            <span th:if="${property.verificationStatus == 'APPROVED'}" class="status-badge status-approved">
+                                <i class="fas fa-check"></i> Approved
+                            </span>
+                            <span th:if="${property.verificationStatus == 'REJECTED'}" class="status-badge status-rejected">
+                                <i class="fas fa-times"></i> Rejected
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="divider">
+                        <div class="info-label"><i class="fas fa-align-left"></i> Description</div>
+                        <div class="info-value" style="margin-top: 12px; font-size: 0.95rem; line-height: 1.6;" th:text="${property.description}">Property description goes here</div>
+                    </div>
+
+                    <div class="divider">
+                        <div class="info-label"><i class="fas fa-location-dot"></i> Location Coordinates</div>
+                        <div class="info-value" style="margin-top: 12px;">
+                            <p style="margin: 4px 0;"><strong>Latitude:</strong> <span th:text="${property.latitude}">19.0760</span></p>
+                            <p style="margin: 4px 0;"><strong>Longitude:</strong> <span th:text="${property.longitude}">72.8777</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Property Images -->
+                <div class="section">
+                    <h2>
+                        <i class="fas fa-images"></i> Property Images
+                    </h2>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 12px;">Uploaded property images for verification</p>
+                    <div class="gallery">
+                        <div th:if="${#arrays.isEmpty(imagePaths)}" style="grid-column: 1/-1; text-align: center; padding: 32px;">
+                            <i class="fas fa-image" style="font-size: 3rem; color: var(--border); margin-bottom: 12px; display: block;"></i>
+                            <p style="color: var(--text-secondary);">No images uploaded</p>
+                        </div>
+                        <a th:each="imagePath : ${imagePaths}" 
+                           th:href="@{/admin/file/image/{propertyId}/{filename}(propertyId=${property.id}, filename=${imagePath})}"
+                           target="_blank" 
+                           class="gallery-item"
+                           th:title="${imagePath}">
+                            <img th:src="@{/admin/file/image/{propertyId}/{filename}(propertyId=${property.id}, filename=${imagePath})}" 
+                                 alt="Property image">
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Property Documents -->
+                <div class="section">
+                    <h2>
+                        <i class="fas fa-file-pdf"></i> Ownership Documents
+                    </h2>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 12px;">Documents uploaded for property verification</p>
+                    <div th:if="${#arrays.isEmpty(documentPaths)}" style="text-align: center; padding: 32px; color: var(--text-secondary);">
+                        <i class="fas fa-folder-open" style="font-size: 3rem; color: var(--border); margin-bottom: 12px; display: block;"></i>
+                        <p>No documents uploaded</p>
+                    </div>
+                    <ul th:if="${!#arrays.isEmpty(documentPaths)}" class="document-list">
+                        <li th:each="docPath : ${documentPaths}" class="document-item">
+                            <i class="fas fa-file-pdf" style="color: var(--primary);"></i>
+                            <a th:href="@{/admin/file/document/{propertyId}/{filename}(propertyId=${property.id}, filename=${docPath})}"
+                               target="_blank">
+                               <span th:text="${docPath}">document.pdf</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Right Column: Verification Section -->
+            <div>
+                <!-- Landlord Information -->
+                <div class="section">
+                    <h2>
+                        <i class="fas fa-user"></i> Landlord Information
+                    </h2>
+                    <div class="landlord-card">
+                        <p><strong style="font-size: 1.1rem;" th:text="${landlord.firstName + ' ' + landlord.lastName}">John Doe</strong></p>
+                        <p style="margin: 12px 0 0; font-size: 0.9rem;">
+                            <i class="fas fa-envelope" style="color: var(--primary); width: 20px;"></i>
+                            <span th:text="${landlord.email}">john@example.com</span>
+                        </p>
+                        <p style="margin: 8px 0 0; font-size: 0.9rem;">
+                            <i class="fas fa-id-card" style="color: var(--primary); width: 20px;"></i>
+                            <span th:text="${landlord.role}">LANDLORD</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Verification Actions (Only for PENDING) -->
+                <div th:if="${property.verificationStatus == 'PENDING'}" class="section">
+                    <h2>
+                        <i class="fas fa-check-double"></i> Verification Actions
+                    </h2>
+                    
+                    <!-- Approve Form -->
+                    <form th:action="@{/admin/property/{id}/approve(id=${property.id})}" method="POST" style="margin-bottom: 24px;">
+                        <div class="form-group">
+                            <label for="notes">
+                                <i class="fas fa-note-sticky"></i> Approval Notes (Optional)
+                            </label>
+                            <textarea id="notes" name="notes" placeholder="Add any notes about this approval..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-approve" style="width: 100%;">
+                            <i class="fas fa-check-circle"></i> Approve Property
+                        </button>
+                    </form>
+
+                    <!-- Reject Form -->
+                    <form th:action="@{/admin/property/{id}/reject(id=${property.id})}" method="POST" onsubmit="return confirm('Are you sure you want to reject this property');">
+                        <div class="form-group">
+                            <label for="rejectionReason">
+                                <i class="fas fa-exclamation-circle"></i> Rejection Reason (Required)
+                            </label>
+                            <textarea id="rejectionReason" name="rejectionReason" placeholder="Explain why this property is being rejected..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-reject" style="width: 100%;">
+                            <i class="fas fa-times-circle"></i> Reject Property
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Show Admin Notes (for non-PENDING) -->
+                <div th:if="${property.adminNotes != null and property.adminNotes != '' and property.verificationStatus != 'PENDING'}" class="section">
+                    <h2>
+                        <i class="fas fa-clipboard"></i> Admin Notes
+                    </h2>
+                    <div style="background: var(--lighter); padding: 16px; border-radius: 8px; color: var(--text-secondary); border-left: 4px solid var(--primary);">
+                        <p th:text="${property.adminNotes}" style="margin: 0; line-height: 1.6;">Admin notes appear here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/js/chatbot-widget.js"></script>
+</body>
+</html>
+
+
+
+

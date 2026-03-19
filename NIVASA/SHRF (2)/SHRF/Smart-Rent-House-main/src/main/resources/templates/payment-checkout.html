@@ -1,0 +1,456 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Checkout - NIVASA</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/payment.css">
+    <script src="https://js.stripe.com/v3/"></script>
+    
+    <link rel="stylesheet" href="/css/professional-theme.css">
+        <link rel="stylesheet" href="/css/chatbot-widget.css">
+<link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav class="navbar">
+                <div class="nav-brand">
+                    <a href="/home">NIVASA</a>
+                </div>
+                <div class="nav-links">
+                    <a href="/home">Home</a>
+                    <a href="/logout-tenant">Logout</a>
+                </div>
+            </nav>
+        </header>
+
+        <main class="payment-main">
+            <div class="payment-container">
+                <h1>Complete Your Payment</h1>
+
+                <div class="property-summary">
+                    <h2>Property Details</h2>
+                    <div class="property-info">
+                        <h3 th:text="${property.name}">Property Name</h3>
+                        <p><strong>Address:</strong> <span th:text="${property.address}">Address</span></p>
+                        <p><strong>Owner:</strong> <span th:text="${property.ownerName}">Owner Name</span></p>
+                        <p><strong>Payment Type:</strong> <span th:text="${paymentType}">Advance</span></p>
+                    </div>
+                </div>
+
+                <div class="payment-summary">
+                    <h2>Payment Summary</h2>
+                    <div class="amount-display">
+                        <span class="amount">&#8377;<span th:text="${#numbers.formatDecimal(amount, 1, 2)}">0.00</span></span>
+                        <span class="currency">INR</span>
+                    </div>
+                </div>
+
+                <div class="payment-form">
+                    <div class="mock-payment-notice">
+                        <div class="notice-icon">&#128179;</div>
+                        <h3>Mock Payment Mode</h3>
+                        <p>This is a development environment. All payments are simulated and will always succeed.</p>
+                        <p>No real money will be charged.</p>
+                    </div>
+
+                    <!-- Payment Method Selection -->
+                    <div class="payment-methods-section">
+                        <h2>Select Payment Method</h2>
+                        <div class="payment-methods-grid">
+                            <label class="payment-method-card">
+                                <input type="radio" name="paymentMethod" value="card" checked>
+                                <div class="method-content">
+                                    <span class="method-icon">&#128179;</span>
+                                    <span class="method-name">Credit/Debit Card</span>
+                                </div>
+                            </label>
+
+                            <label class="payment-method-card">
+                                <input type="radio" name="paymentMethod" value="upi">
+                                <div class="method-content">
+                                    <span class="method-icon">&#128241;</span>
+                                    <span class="method-name">UPI</span>
+                                </div>
+                            </label>
+
+                            <label class="payment-method-card">
+                                <input type="radio" name="paymentMethod" value="netbanking">
+                                <div class="method-content">
+                                    <span class="method-icon">&#127974;</span>
+                                    <span class="method-name">Net Banking</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <form id="payment-form">
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" id="name" name="name" th:value="${user.firstName + ' ' + user.lastName}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" th:value="${user.email}" readonly>
+                        </div>
+
+                        <!-- Card Payment Fields -->
+                        <div id="card-section" class="payment-method-section active">
+                            <h3>Card Details</h3>
+                            <div class="form-group">
+                                <label for="cardNumber">Card Number <span class="required">*</span></label>
+                                <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="cardExpiry">Expiry Date <span class="required">*</span></label>
+                                    <input type="text" id="cardExpiry" name="cardExpiry" placeholder="MM/YY" maxlength="5">
+                                </div>
+                                <div class="form-group">
+                                    <label for="cardCVV">CVV <span class="required">*</span></label>
+                                    <input type="text" id="cardCVV" name="cardCVV" placeholder="123" maxlength="4">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- UPI Payment Fields -->
+                        <div id="upi-section" class="payment-method-section" style="display: none;">
+                            <h3>UPI Details</h3>
+                            <div class="form-group">
+                                <label for="upiId">UPI ID <span class="required">*</span></label>
+                                <input type="text" id="upiId" name="upiId" placeholder="yourname@bankname">
+                            </div>
+                            <p class="method-info">You will be redirected to your UPI app to complete the payment.</p>
+                        </div>
+
+                        <!-- Net Banking Payment Fields -->
+                        <div id="netbanking-section" class="payment-method-section" style="display: none;">
+                            <h3>Net Banking Details</h3>
+                            <div class="form-group">
+                                <label for="bankSelect">Select Bank <span class="required">*</span></label>
+                                <select id="bankSelect" name="bankSelect">
+                                    <option value="">-- Select Your Bank --</option>
+                                    <option value="sbi">State Bank of India (SBI)</option>
+                                    <option value="hdfc">HDFC Bank</option>
+                                    <option value="icici">ICICI Bank</option>
+                                    <option value="axis">Axis Bank</option>
+                                    <option value="boi">Bank of India</option>
+                                    <option value="pnb">Punjab National Bank</option>
+                                    <option value="bob">Bank of Baroda</option>
+                                    <option value="kotak">Kotak Mahindra Bank</option>
+                                    <option value="yes">Yes Bank</option>
+                                    <option value="idbi">IDBI Bank</option>
+                                </select>
+                            </div>
+                            <p class="method-info">You will be redirected to your bank's website to complete the payment.</p>
+                        </div>
+
+                        <div id="card-errors" class="error-message"></div>
+
+                        <button type="submit" id="submit-button" class="payment-button">
+                            <span id="button-text">Complete Mock Payment &#8377;<span th:text="${#numbers.formatDecimal(amount, 1, 2)}">0.00</span></span>
+                            <div id="spinner" class="spinner" style="display: none;"></div>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="payment-security">
+                    <p>&#128274; Your payment information is secure and encrypted.</p>
+                    <p>Powered by Stripe</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Mock payment handling with multiple payment methods
+        
+        // Extract URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const propertyId = urlParams.get('propertyId');
+        const paymentTypeParam = urlParams.get('paymentType');
+        const amount = urlParams.get('amount');
+        
+        console.log('Payment Details:', { propertyId, paymentTypeParam, amount });
+
+        // Handle payment method selection
+        const paymentMethodInputs = document.querySelectorAll('input[name="paymentMethod"]');
+        paymentMethodInputs.forEach(input => {
+            input.addEventListener('change', (e) => {
+                const selectedMethod = e.target.value;
+                updatePaymentMethodDisplay(selectedMethod);
+            });
+        });
+
+        function updatePaymentMethodDisplay(method) {
+            // Get all payment method sections
+            const cardSection = document.getElementById('card-section');
+            const upiSection = document.getElementById('upi-section');
+            const netbankingSection = document.getElementById('netbanking-section');
+            
+            // Hide all and remove active class
+            [cardSection, upiSection, netbankingSection].forEach(section => {
+                if (section) {
+                    section.style.display = 'none';
+                    section.classList.remove('active');
+                }
+            });
+
+            // Show only the selected payment method section
+            let activeSection = null;
+            switch(method) {
+                case 'card':
+                    activeSection = cardSection;
+                    break;
+                case 'upi':
+                    activeSection = upiSection;
+                    break;
+                case 'netbanking':
+                    activeSection = netbankingSection;
+                    break;
+            }
+            
+            if (activeSection) {
+                activeSection.style.display = 'block';
+                activeSection.classList.add('active');
+            }
+            
+            console.log('Payment method changed to:', method);
+        }
+
+        // Format card number input
+        const cardNumberInput = document.getElementById('cardNumber');
+        if (cardNumberInput) {
+            cardNumberInput.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\s/g, '');
+                let formattedValue = value.replace(/(\d{4})/g, '$1 ').trim();
+                e.target.value = formattedValue;
+            });
+        }
+
+        // Format card expiry input
+        const cardExpiryInput = document.getElementById('cardExpiry');
+        if (cardExpiryInput) {
+            cardExpiryInput.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length >= 2) {
+                    value = value.slice(0, 2) + '/' + value.slice(2, 4);
+                }
+                e.target.value = value;
+            });
+        }
+
+        // Format CVV input
+        const cardCVVInput = document.getElementById('cardCVV');
+        if (cardCVVInput) {
+            cardCVVInput.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+            });
+        }
+
+        // Validate UPI format
+        const upiIdInput = document.getElementById('upiId');
+        if (upiIdInput) {
+            upiIdInput.addEventListener('blur', (e) => {
+                const upiPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/;
+                if (e.target.value && !upiPattern.test(e.target.value)) {
+                    showError('Invalid UPI ID format. Use format: yourname@bankname');
+                }
+            });
+        }
+
+        // Handle form submission
+        const form = document.getElementById('payment-form');
+        const submitButton = document.getElementById('submit-button');
+        const spinner = document.getElementById('spinner');
+        const buttonText = document.getElementById('button-text');
+        const cardErrors = document.getElementById('card-errors');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+            const cardErrors = document.getElementById('card-errors');
+            
+            // Clear previous errors
+            cardErrors.textContent = '';
+            cardErrors.style.display = 'none';
+
+            // Validate payment method fields
+            if (!validatePaymentMethod(selectedMethod)) {
+                cardErrors.style.display = 'block';
+                return;
+            }
+
+            // Show loading state
+            submitButton.disabled = true;
+            spinner.style.display = 'inline-block';
+            buttonText.textContent = 'Processing Payment...';
+
+            try {
+                // Simulate payment processing delay
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Get payment method details
+                const paymentData = {
+                    propertyId: propertyId,
+                    paymentType: paymentTypeParam || 'ADVANCE',
+                    paymentMethod: selectedMethod
+                };
+
+                console.log('Sending payment data:', paymentData);
+                console.log('Selected method:', selectedMethod);
+
+                // Add method-specific data
+                if (selectedMethod === 'card') {
+                    const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+                    paymentData.cardNumber = cardNumber.slice(-4);
+                    paymentData.cardExpiry = document.getElementById('cardExpiry').value;
+                    paymentData.cardCVV = document.getElementById('cardCVV').value;
+                    console.log('Card payment data:', paymentData);
+                } else if (selectedMethod === 'upi') {
+                    paymentData.upiId = document.getElementById('upiId').value;
+                    console.log('UPI payment data:', paymentData);
+                } else if (selectedMethod === 'netbanking') {
+                    paymentData.bank = document.getElementById('bankSelect').value;
+                    console.log('Net banking payment data:', paymentData);
+                }
+
+                // Create mock payment intent
+                const response = await fetch('/payment/create-intent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(paymentData)
+                });
+
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to create payment intent');
+                }
+
+                // Simulate successful payment
+                console.log('Payment successful:', data);
+                console.log('Payment Method:', selectedMethod);
+
+                // Notify server of successful payment
+                const successResponse = await fetch('/payment/success', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        paymentIntentId: data.clientSecret  data.clientSecret.split('_secret_')[0] : 'mock_intent',
+                        paymentMethod: selectedMethod
+                    })
+                });
+
+                console.log('Success notification status:', successResponse.status);
+
+                // Redirect to success page
+                window.location.href = '/payment/success-pagepropertyId=' + propertyId;
+
+            } catch (error) {
+                console.error('Payment error:', error);
+                showError('Payment failed: ' + error.message);
+                submitButton.disabled = false;
+                spinner.style.display = 'none';
+                buttonText.textContent = 'Complete Mock Payment &#8377;' + (amount || '0.00');
+            }
+        });
+
+        function validatePaymentMethod(method) {
+            console.log('Validating payment method:', method);
+            
+            if (method === 'card') {
+                const cardNumberInput = document.getElementById('cardNumber');
+                const cardExpiryInput = document.getElementById('cardExpiry');
+                const cardCVVInput = document.getElementById('cardCVV');
+                
+                const cardNumber = cardNumberInput.value.replace(/\s/g, '');
+                const expiry = cardExpiryInput.value;
+                const cvv = cardCVVInput.value;
+
+                console.log('Card validation:', { cardNumber: cardNumber.length, expiry, cvv });
+
+                if (!cardNumber || cardNumber.length < 13) {
+                    showError('&#10060; Please enter a valid card number (minimum 13 digits)');
+                    cardNumberInput.focus();
+                    return false;
+                }
+                if (!expiry || !/^\d{2}\/\d{2}$/.test(expiry)) {
+                    showError('&#10060; Please enter a valid expiry date in MM/YY format');
+                    cardExpiryInput.focus();
+                    return false;
+                }
+                if (!cvv || cvv.length < 3) {
+                    showError('&#10060; Please enter a valid CVV (3 or 4 digits)');
+                    cardCVVInput.focus();
+                    return false;
+                }
+                console.log('Card validation passed');
+            } 
+            else if (method === 'upi') {
+                const upiIdInput = document.getElementById('upiId');
+                const upiId = upiIdInput.value.trim();
+                const upiPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/;
+                
+                console.log('UPI validation:', { upiId, isValid: upiPattern.test(upiId) });
+
+                if (!upiId) {
+                    showError('&#10060; Please enter your UPI ID');
+                    upiIdInput.focus();
+                    return false;
+                }
+                if (!upiPattern.test(upiId)) {
+                    showError('&#10060; Please enter a valid UPI ID format (e.g., yourname@bankname)');
+                    upiIdInput.focus();
+                    return false;
+                }
+                console.log('UPI validation passed');
+            } 
+            else if (method === 'netbanking') {
+                const bankSelect = document.getElementById('bankSelect');
+                const bank = bankSelect.value;
+                
+                console.log('Net banking validation:', { bank });
+
+                if (!bank) {
+                    showError('&#10060; Please select a bank');
+                    bankSelect.focus();
+                    return false;
+                }
+                console.log('Net banking validation passed');
+            }
+
+            return true;
+        }
+
+        function showError(message) {
+            const cardErrors = document.getElementById('card-errors');
+            cardErrors.textContent = message;
+            cardErrors.style.display = 'block';
+        }
+
+        // Initialize payment display on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize card section as visible by default
+            updatePaymentMethodDisplay('card');
+            console.log('Payment form initialized');
+        });
+        /*]]>*/
+    </script>
+    <script src="/js/chatbot-widget.js"></script>
+</body>
+</html>
+
+
+

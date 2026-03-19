@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment History - NIVASA</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/payment.css">
+    
+    <link rel="stylesheet" href="/css/professional-theme.css">
+        <link rel="stylesheet" href="/css/chatbot-widget.css">
+<link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav class="navbar">
+                <div class="nav-brand">
+                    <a href="/home">NIVASA</a>
+                </div>
+                <div class="nav-links">
+                    <a href="/home">Home</a>
+                    <a href="/tenant/profile">Profile</a>
+                    <a href="/logout-tenant">Logout</a>
+                </div>
+            </nav>
+        </header>
+
+        <main class="payment-main">
+            <div class="payment-container">
+                <h1>Payment History</h1>
+
+                <div class="payment-history">
+                    <div th:if="${#lists.isEmpty(payments)}" class="no-payments">
+                        <p>You haven't made any payments yet.</p>
+                        <a href="/home" class="btn btn-primary">Browse Properties</a>
+                    </div>
+
+                    <div th:if="${not #lists.isEmpty(payments)}" class="payments-list">
+                        <div th:each="payment : ${payments}" class="payment-item">
+                            <div class="payment-header">
+                                <div class="payment-amount">
+                                    <span class="amount">&#8377;<span th:text="${#numbers.formatDecimal(payment.amount, 1, 2)}">0.00</span></span>
+                                    <span class="currency">INR</span>
+                                </div>
+                                <div class="payment-status">
+                                    <span th:class="'status-' + ${payment.status.toLowerCase()}"
+                                          th:text="${payment.status}">Status</span>
+                                </div>
+                            </div>
+
+                            <div class="payment-details">
+                                <p><strong>Type:</strong> <span th:text="${payment.paymentType}">Type</span></p>
+                                <p th:if="${payment.paymentMethod}"><strong>Method:</strong> <span th:text="${#strings.capitalize(payment.paymentMethod)}">Method</span></p>
+                                <p><strong>Date:</strong> <span th:text="${#temporals.format(payment.createdAt, 'dd MMM yyyy, HH:mm')}">Date</span></p>
+                                <p><strong>Description:</strong> <span th:text="${payment.description}">Description</span></p>
+                            </div>
+
+                            <div class="payment-actions">
+                                <a th:href="'/payment/details/' + ${payment.id}" class="btn btn-secondary btn-sm">View Details</a>
+                                <a th:href="'/payment/download-receipt/' + ${payment.id}" class="btn btn-primary btn-sm">Download Receipt</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/chatbot-widget.js"></script>
+</body>
+</html>
+
+

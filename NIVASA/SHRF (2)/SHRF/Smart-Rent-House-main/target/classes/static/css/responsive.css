@@ -1,0 +1,166 @@
+/* Global responsive behavior shared by all templates */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img, svg, video, canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+.table-container,
+.table-wrapper,
+.responsive-table,
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 1024px) {
+  .container,
+  .content,
+  .wrap,
+  main {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  .stats-grid,
+  .cards-grid,
+  .dashboard-grid,
+  .action-grid,
+  .properties-list,
+  .testimonials-grid,
+  .features-grid,
+  .steps-grid,
+  .footer-content,
+  .filter-row,
+  .info-grid,
+  .tenant-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .nav-links,
+  .nav-menu {
+    gap: 12px !important;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 768px) {
+  h1 { font-size: 1.65rem !important; }
+  h2 { font-size: 1.35rem !important; }
+
+  .container,
+  .content,
+  .wrap,
+  main,
+  .section,
+  .card,
+  .payment-container,
+  .search-section {
+    padding: 16px !important;
+  }
+
+  .navbar,
+  .nav-bar {
+    height: auto !important;
+    min-height: 64px;
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 10px;
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+  }
+
+  .logo,
+  .navbar-right,
+  .nav-links,
+  .nav-menu,
+  .user-info {
+    width: 100%;
+    justify-content: flex-start !important;
+  }
+
+  .nav-links a,
+  .nav-menu a {
+    white-space: normal;
+    line-height: 1.35;
+  }
+
+  .stats-grid,
+  .cards-grid,
+  .dashboard-grid,
+  .action-grid,
+  .properties-list,
+  .testimonials-grid,
+  .features-grid,
+  .steps-grid,
+  .footer-content,
+  .filter-row,
+  .info-grid,
+  .property-info,
+  .property-footer,
+  .form-row,
+  .payment-methods-grid,
+  .tenant-options {
+    grid-template-columns: 1fr !important;
+  }
+
+  .header-section,
+  .search-container,
+  .properties-header,
+  .payment-header,
+  .action-buttons,
+  .actions,
+  .links {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .btn,
+  .action-btn,
+  .logout-btn,
+  .payment-button,
+  .property-btn,
+  button[type="submit"] {
+    width: 100%;
+    text-align: center;
+  }
+
+  .modal-content {
+    width: calc(100% - 24px);
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  table { min-width: 700px; }
+}
+
+@media (max-width: 480px) {
+  .container,
+  .content,
+  .wrap,
+  main {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .hero,
+  .footer,
+  .stats,
+  .features,
+  .how-it-works,
+  .testimonials,
+  .cta-section {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .stat-number,
+  .stat-value,
+  .amount {
+    font-size: 1.9rem !important;
+  }
+}

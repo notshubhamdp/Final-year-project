@@ -1,0 +1,212 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NIVASA &#8211; Frequently Asked Questions</title>
+
+    <style>
+        :root{
+            --accent:#4f46e5;
+            --accent-light:#6366f1;
+            --muted:#6b7280;
+            --bg:#f6f8fb;
+            --card:#ffffff;
+            --shadow-soft:0 4px 20px rgba(79,70,229,0.1)
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#0f172a}
+
+        /* NAVBAR */
+        .navbar{background:rgba(255,255,255,0.95);backdrop-filter:blur(10px);padding:16px 32px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow-soft);position:sticky;top:0;z-index:100}
+        .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.3rem;color:var(--accent)}
+        .logo img{width:40px;height:40px}
+        .nav-menu a{margin-left:20px;color:var(--muted);text-decoration:none;font-weight:500}
+        .nav-menu a:hover{color:var(--accent)}
+
+        /* HERO */
+        .hero{padding:90px 32px;text-align:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}
+        .hero h1{font-size:3rem;font-weight:800;margin-bottom:12px}
+        .hero p{font-size:1.2rem;opacity:0.95}
+
+        /* CONTENT */
+        .content{max-width:900px;margin:60px auto;padding:0 24px}
+        .faq-card{background:var(--card);border-radius:16px;box-shadow:var(--shadow-soft);margin-bottom:16px;overflow:hidden}
+        .faq-question{padding:22px 24px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:600}
+        .faq-question:hover{background:#f1f3ff}
+        .faq-answer{max-height:0;overflow:hidden;transition:max-height 0.4s ease;padding:0 24px}
+        .faq-answer p{padding-bottom:20px;color:#334155;line-height:1.7}
+        .arrow{transition:transform 0.3s}
+        .faq-card.active .faq-answer{max-height:300px}
+        .faq-card.active .arrow{transform:rotate(180deg)}
+
+        /* CTA */
+        .cta{margin-top:60px;text-align:center;background:var(--card);padding:40px;border-radius:20px;box-shadow:var(--shadow-soft)}
+        .cta h2{color:var(--accent);margin-bottom:12px}
+        .cta a{display:inline-block;margin-top:16px;padding:14px 28px;background:var(--accent);color:white;text-decoration:none;border-radius:12px;font-weight:600}
+        .cta a:hover{background:var(--accent-light)}
+
+        /* FOOTER */
+        .footer{background:#0f172a;color:white;padding:60px 32px;margin-top:80px}
+        .footer p{text-align:center;color:rgba(255,255,255,0.7)}
+    </style>
+
+    <link rel="icon" href="/images/nivasa-logo.svg" type="image/svg+xml">
+    
+    <link rel="stylesheet" href="/css/professional-theme.css">
+        <link rel="stylesheet" href="/css/chatbot-widget.css">
+<link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo">
+        <img src="/images/nivasa-logo.svg" alt="NIVASA">
+        <span>NIVASA</span>
+    </div>
+    <div class="nav-menu">
+        <a href="/">Home</a>
+        <a href="/contact-us.html">Contact</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <h1>Frequently Asked Questions</h1>
+    <p>Everything tenants and landlords need to know</p>
+</section>
+
+<!-- FAQ CONTENT -->
+<div class="content">
+
+    <!-- TENANTS -->
+    <div class="faq-card">
+        <div class="faq-question">
+            Is NIVASA free for tenants
+            <span class="arrow">&#9660;</span>
+        </div>
+        <div class="faq-answer">
+            <p>Yes. Browsing properties, contacting landlords, and creating an account on NIVASA is completely free for tenants.</p>
+        </div>
+    </div>
+
+    <div class="faq-card">
+        <div class="faq-question">
+            Are the properties on NIVASA verified
+            <span class="arrow">&#9660;</span>
+        </div>
+        <div class="faq-answer">
+            <p>Yes. All landlords and property listings go through a verification process to ensure safety and authenticity.</p>
+        </div>
+    </div>
+
+    <div class="faq-card">
+        <div class="faq-question">
+            Can I directly contact the landlord
+            <span class="arrow">&#9660;</span>
+        </div>
+        <div class="faq-answer">
+            <p>Absolutely. NIVASA allows direct communication between tenants and landlords through secure contact details.</p>
+        </div>
+    </div>
+
+    <div class="faq-card">
+        <div class="faq-question">
+            Does NIVASA charge brokerage fees
+            <span class="arrow">&#9660;</span>
+        </div>
+        <div class="faq-answer">
+            <p>No. NIVASA does not charge brokerage fees unless explicitly mentioned for premium services.</p>
+        </div>
+    </div>
+
+    <div class="faq-card">
+        <div class="faq-question">
+            Can I save properties for later
+            <span class="arrow">&#9660;</span>
+        </div>
+        <div class="faq-answer">
+            <p>Yes. You can save favorite properties in your account and access them anytime.</p>
+        </div>
+    </div>
+
+    <!-- LANDLORDS -->
+    <div class="faq-card">
+        <div class="faq-question">
+            Is listing a property free for landlords
+            <span class="arrow">&#9660;</span>
+        </div>
+        <div class="faq-answer">
+            <p>Yes. Basic property listing on NIVASA is free. Optional premium visibility may be introduced later.</p>
+        </div>
+    </div>
+
+    <div class="faq-card">
+        <div class="faq-question">
+            How do I verify my property
+            <span class="arrow">&#9660;</span>
+        </div>
+        <div class="faq-answer">
+            <p>You will be asked to upload property details and documents, which are reviewed by our verification team.</p>
+        </div>
+    </div>
+
+    <div class="faq-card">
+        <div class="faq-question">
+            How can I find genuine tenants
+            <span class="arrow">&#9660;</span>
+        </div>
+        <div class="faq-answer">
+            <p>NIVASA connects you with verified tenant profiles, reducing risk and improving trust.</p>
+        </div>
+    </div>
+
+    <div class="faq-card">
+        <div class="faq-question">
+            Can I manage multiple properties
+            <span class="arrow">&#9660;</span>
+        </div>
+        <div class="faq-answer">
+            <p>Yes. Landlords can list and manage multiple properties from a single dashboard.</p>
+        </div>
+    </div>
+
+    <div class="faq-card">
+        <div class="faq-question">
+            Does NIVASA handle rental agreements
+            <span class="arrow">&#9660;</span>
+        </div>
+        <div class="faq-answer">
+            <p>NIVASA assists with documentation and verification, but final agreements are between tenant and landlord.</p>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta">
+        <h2>Still have questions</h2>
+        <p>We&#8217;re happy to help you.</p>
+        <a href="/contact-us.html">Go to Contact Us</a>
+    </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+    <p>&copy; 2025 NIVASA. All rights reserved.</p>
+</footer>
+
+<script>
+    document.querySelectorAll('.faq-question').forEach(item=>{
+        item.addEventListener('click',()=>{
+            item.parentElement.classList.toggle('active');
+        });
+    });
+</script>
+
+    <script src="/js/chatbot-widget.js"></script>
+</body>
+</html>
+
+
+
