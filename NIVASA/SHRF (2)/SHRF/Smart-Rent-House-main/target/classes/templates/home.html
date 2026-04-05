@@ -183,11 +183,37 @@
         }
     </style>
     <link rel="icon" href="/images/nivasa-logo.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="/css/default-ui.css">
+<link rel="stylesheet" href="/css/default-ui.css">
     
     <link rel="stylesheet" href="/css/professional-theme.css">
         <link rel="stylesheet" href="/css/chatbot-widget.css">
 <link rel="stylesheet" href="/css/responsive.css">
+    <style>
+        .nav-toggle{display:none;align-items:center;justify-content:center;width:44px;height:44px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--accent) 0%,var(--accent-light) 100%);box-shadow:0 10px 24px rgba(79,70,229,0.22);cursor:pointer;transition:transform 0.2s ease,box-shadow 0.2s ease}
+        .nav-toggle:hover{transform:translateY(-1px);box-shadow:0 14px 30px rgba(79,70,229,0.28)}
+        .nav-toggle:focus-visible{outline:3px solid rgba(99,102,241,0.25);outline-offset:3px}
+        .nav-toggle-line{display:block;width:18px;height:2px;background:#fff;border-radius:999px;transition:transform 0.2s ease,opacity 0.2s ease}
+        .nav-toggle-line + .nav-toggle-line{margin-top:4px}
+        .nav-toggle.active .nav-toggle-line:nth-child(1){transform:translateY(6px) rotate(45deg)}
+        .nav-toggle.active .nav-toggle-line:nth-child(2){opacity:0}
+        .nav-toggle.active .nav-toggle-line:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+        @media (max-width:768px){
+            .home-navbar{display:grid !important;grid-template-columns:minmax(0,1fr) auto;align-items:center !important;gap:12px;padding:14px 16px !important}
+            .home-navbar .logo{width:auto !important;min-width:0;justify-content:flex-start !important}
+            .home-navbar .logo span{white-space:nowrap}
+            .home-navbar .nav-toggle{display:inline-flex}
+            .home-navbar > .home-nav-menu{display:none !important;grid-column:1 / -1;width:100%;grid-template-columns:1fr;gap:10px !important;padding:12px !important;border-radius:18px;background:rgba(248,250,252,0.98);border:1px solid rgba(226,232,240,0.95);box-shadow:0 16px 32px rgba(15,23,42,0.08)}
+            .home-navbar > .home-nav-menu.open{display:grid !important}
+            .home-navbar > .home-nav-menu a{display:flex !important;align-items:center;justify-content:center;width:100%;min-height:48px;margin-left:0 !important;padding:12px 14px;border-radius:14px;background:#fff;border:1px solid rgba(226,232,240,0.95);box-shadow:0 4px 12px rgba(15,23,42,0.04);text-align:center}
+            .home-navbar > .home-nav-menu a::before{display:none}
+            .home-navbar > .home-nav-menu .btn-login{margin-left:0 !important;margin-top:0 !important;order:initial;background:var(--gradient-primary);color:#fff;border:none;box-shadow:var(--shadow-soft)}
+        }
+
+        @media (min-width:769px){
+            .home-navbar > .home-nav-menu{display:flex !important}
+        }
+    </style>
 </head>
 <body>
 <!-- Loading Animation -->
@@ -201,12 +227,17 @@
 </div>
 
 <!-- NAVBAR -->
-<nav class="navbar">
+<nav class="navbar home-navbar">
     <div class="logo">
         <img src="/images/nivasa-logo.svg" alt="NIVASA" style="width: 40px; height: 40px;">
         <span>NIVASA</span>
     </div>
-    <div class="nav-menu">
+    <button class="nav-toggle" id="homeNavToggle" type="button" aria-label="Toggle navigation" aria-controls="homeNavMenu" aria-expanded="false">
+        <span class="nav-toggle-line"></span>
+        <span class="nav-toggle-line"></span>
+        <span class="nav-toggle-line"></span>
+    </button>
+    <div class="nav-menu home-nav-menu" id="homeNavMenu">
         <a href="#features">Features</a>
         <a href="#how">How It Works</a>
         <a href="#footer">About</a>
@@ -423,6 +454,40 @@
 </section>
 <script src="/js/loading-animation.js"></script>
     <script src="/js/chatbot-widget.js"></script>
+    <script>
+        (function () {
+            const toggle = document.getElementById('homeNavToggle');
+            const menu = document.getElementById('homeNavMenu');
+
+            if (!toggle || !menu) {
+                return;
+            }
+
+            const setMenuOpen = (isOpen) => {
+                menu.classList.toggle('open', isOpen);
+                toggle.classList.toggle('active', isOpen);
+                toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            };
+
+            toggle.addEventListener('click', () => {
+                setMenuOpen(!menu.classList.contains('open'));
+            });
+
+            menu.querySelectorAll('a').forEach((link) => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        setMenuOpen(false);
+                    }
+                });
+            });
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768) {
+                    setMenuOpen(false);
+                }
+            });
+        })();
+    </script>
 </body>
 </html>
 

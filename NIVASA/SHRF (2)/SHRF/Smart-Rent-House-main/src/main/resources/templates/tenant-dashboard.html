@@ -56,6 +56,39 @@
         .action-card-icon{font-size:2.4rem;margin-bottom:12px}
         .action-card-title{font-weight:600;margin:8px 0;font-size:1rem}
         .action-card-desc{font-size:0.9rem;opacity:0.9}
+
+        /* TENANT BOOKING + PAYMENTS */
+        .section-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+        .section-top h2{margin:0;flex:1 1 auto;border-bottom:none;padding-bottom:0}
+        .section-link{color:var(--accent);text-decoration:none;font-weight:700;font-size:0.95rem}
+        .section-link:hover{color:var(--accent-dark)}
+        .section-note{color:var(--muted);margin:0 0 20px;line-height:1.5}
+        .bookings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+        .booking-card{background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
+        .booking-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+        .booking-property-name{margin:0 0 6px;font-size:1.12rem;color:#0f172a}
+        .booking-property-meta{margin:0;color:var(--muted);font-size:0.92rem;line-height:1.5}
+        .booking-status-chip{display:inline-flex;align-items:center;padding:7px 12px;border-radius:999px;font-size:0.78rem;font-weight:700;white-space:nowrap}
+        .booking-status-approved{background:#dcfce7;color:#166534}
+        .booking-status-pending{background:#fef3c7;color:#92400e}
+        .booking-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0 16px}
+        .booking-stat{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px}
+        .booking-stat-label{display:block;color:var(--muted);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px}
+        .booking-stat-value{display:block;color:#0f172a;font-size:0.98rem;font-weight:700}
+        .booking-actions{display:flex;gap:10px;flex-wrap:wrap}
+        .booking-action{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:700;font-size:0.9rem}
+        .booking-action-primary{background:linear-gradient(135deg,var(--accent) 0%,var(--accent-dark) 100%);color:#fff}
+        .booking-action-secondary{background:#eef2ff;color:var(--accent);border:1px solid #c7d2fe}
+        .payment-list{display:grid;gap:14px}
+        .payment-row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 18px;border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%)}
+        .payment-row-main{display:grid;gap:6px}
+        .payment-row-title{font-size:1rem;font-weight:700;color:#0f172a}
+        .payment-row-subtitle{color:var(--muted);font-size:0.9rem;line-height:1.5}
+        .payment-row-meta{text-align:right;display:grid;gap:6px;justify-items:end}
+        .payment-row-amount{font-size:1rem;font-weight:800;color:#0f172a}
+        .payment-row-date{font-size:0.88rem;color:var(--muted)}
+        .payment-row-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+        .payment-mini-chip{display:inline-flex;padding:5px 10px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:0.78rem;font-weight:700}
         
         /* FEATURED SECTION */
         .featured-banner{background:linear-gradient(135deg,var(--accent) 0%,var(--accent-dark) 100%);color:white;padding:32px;border-radius:12px;margin-bottom:28px;position:relative;overflow:hidden}
@@ -179,6 +212,9 @@
             h1{font-size:1.8rem}
             .section{padding:16px}
             .section h2{font-size:1.2rem}
+            .payment-row{flex-direction:column;align-items:flex-start}
+            .payment-row-meta{justify-items:start;text-align:left}
+            .payment-row-actions{justify-content:flex-start}
             .footer-content{grid-template-columns:1fr;gap:32px;text-align:center}
             .footer-section h4::after{display:none}
         }
@@ -223,7 +259,9 @@
         </button>
         <div class="nav-links" id="tenantNavLinks">
             <span class="user-chip" th:text="${'Welcome, ' + user.firstName}">Welcome, Tenant</span>
+            <a href="#tenantBookings" class="nav-link">My Bookings</a>
             <a th:href="@{/favorites}" class="nav-link">Favorites</a>
+            <a th:href="@{/payment/history}" class="nav-link">Payments</a>
             <a href="/messages/conversations" class="nav-link">Messages</a>
             <a href="/visits" class="nav-link">Visits</a>
             <a th:href="@{/profile}" class="nav-link">Profile</a>
@@ -260,14 +298,14 @@
             <div class="stat-number" th:text="${favoriteProperties != null ? #lists.size(favoriteProperties) : '0'}">0</div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">&#128269;</div>
-            <div class="stat-label">Saved Searches</div>
-            <div class="stat-number">0</div>
+            <div class="stat-icon">&#128273;</div>
+            <div class="stat-label">Booked Properties</div>
+            <div class="stat-number" th:text="${bookedPropertyCount}">0</div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">&#128172;</div>
-            <div class="stat-label">Active Inquiries</div>
-            <div class="stat-number">0</div>
+            <div class="stat-icon">&#128179;</div>
+            <div class="stat-label">Payments Made</div>
+            <div class="stat-number" th:text="${paymentCount}">0</div>
         </div>
     </div>
 
@@ -290,11 +328,114 @@
                 <div class="action-card-title">Messages</div>
                 <div class="action-card-desc">Chat with landlords</div>
             </a>
+            <a href="#tenantBookings" class="action-card" style="background:linear-gradient(135deg,#0f766e 0%,#0f766e 100%)">
+                <div class="action-card-icon">&#127969;</div>
+                <div class="action-card-title">My Bookings</div>
+                <div class="action-card-desc">See booked and approved homes</div>
+            </a>
+            <a th:href="@{/payment/history}" class="action-card" style="background:linear-gradient(135deg,#b45309 0%,#92400e 100%)">
+                <div class="action-card-icon">&#128179;</div>
+                <div class="action-card-title">Payment History</div>
+                <div class="action-card-desc">Track all rent and advance payments</div>
+            </a>
             <a th:href="@{/profile}" class="action-card" style="background:linear-gradient(135deg,#8b5cf6 0%,#7c3aed 100%)">
                 <div class="action-card-icon">&#9881;</div>
                 <div class="action-card-title">Settings</div>
                 <div class="action-card-desc">Update your preferences</div>
             </a>
+        </div>
+    </div>
+
+    <div class="section" id="tenantBookings">
+        <div class="section-top">
+            <h2>My Booked Properties</h2>
+            <a th:href="@{/payment/history}" class="section-link">Open full payment history</a>
+        </div>
+        <p class="section-note">Every advance payment you make is tracked here, so you can reopen the property, see approval status, and review the related payment details anytime.</p>
+
+        <div th:if="${#lists.isEmpty(bookedProperties)}" class="empty-state">
+            <div class="empty-icon">&#127969;</div>
+            <h3>No booked properties yet</h3>
+            <p>Once you pay an advance for a property, it will appear here with its approval status and payment details.</p>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(bookedProperties)}" class="bookings-grid">
+            <div class="booking-card" th:each="booking : ${bookedProperties}">
+                <div class="booking-card-header">
+                    <div>
+                        <h3 class="booking-property-name" th:text="${booking.propertyName}">Property Name</h3>
+                        <p class="booking-property-meta" th:text="${booking.addressLine}">Address</p>
+                        <p class="booking-property-meta" th:text="${'Owner: ' + booking.ownerName}">Owner</p>
+                    </div>
+                    <span class="booking-status-chip"
+                          th:classappend="${booking.approved} ? ' booking-status-approved' : ' booking-status-pending'"
+                          th:text="${booking.bookingStatusLabel}">Awaiting Landlord Approval</span>
+                </div>
+
+                <div class="booking-stats">
+                    <div class="booking-stat">
+                        <span class="booking-stat-label">Advance Paid</span>
+                        <span class="booking-stat-value"
+                              th:text="${'INR ' + #numbers.formatDecimal(booking.bookingAmount, 0, 'COMMA', 2, 'POINT')}">INR 0.00</span>
+                    </div>
+                    <div class="booking-stat">
+                        <span class="booking-stat-label">Monthly Rent</span>
+                        <span class="booking-stat-value"
+                              th:text="${'INR ' + #numbers.formatDecimal(booking.monthlyRent, 0, 'COMMA', 2, 'POINT')}">INR 0.00</span>
+                    </div>
+                    <div class="booking-stat">
+                        <span class="booking-stat-label">Booked On</span>
+                        <span class="booking-stat-value" th:text="${#temporals.format(booking.bookedAt, 'dd MMM yyyy')}">05 Apr 2026</span>
+                    </div>
+                    <div class="booking-stat">
+                        <span class="booking-stat-label">Property ID</span>
+                        <span class="booking-stat-value" th:text="${booking.propertyPublicId}">0000000000</span>
+                    </div>
+                </div>
+
+                <div class="booking-actions">
+                    <a th:href="@{/property/{id}(id=${booking.propertyPublicId})}" class="booking-action booking-action-primary">View Property</a>
+                    <a th:href="@{/payment/details/{paymentId}(paymentId=${booking.paymentId})}" class="booking-action booking-action-secondary">Payment Details</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-top">
+            <h2>Recent Payments</h2>
+            <a th:href="@{/payment/history}" class="section-link">See all payments</a>
+        </div>
+        <p class="section-note">Keep an eye on the latest advance, rent, and deposit payments without leaving your dashboard.</p>
+
+        <div th:if="${#lists.isEmpty(recentPayments)}" class="empty-state">
+            <div class="empty-icon">&#128179;</div>
+            <h3>No payments yet</h3>
+            <p>Your payment activity will start appearing here after you complete a booking or rent payment.</p>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(recentPayments)}" class="payment-list">
+            <div class="payment-row" th:each="payment : ${recentPayments}">
+                <div class="payment-row-main">
+                    <div class="payment-row-title" th:text="${payment.propertyName}">Property Name</div>
+                    <div class="payment-row-subtitle">
+                        <span th:text="${payment.paymentTypeLabel}">Advance Payment</span>
+                        <span> for </span>
+                        <span th:text="${payment.propertyPublicId}">Property ID</span>
+                        <span> • </span>
+                        <span th:text="${payment.paymentStatus}">COMPLETED</span>
+                    </div>
+                    <div class="payment-mini-chip" th:if="${payment.bookingStatusLabel != null}" th:text="${payment.bookingStatusLabel}">Awaiting Landlord Approval</div>
+                </div>
+                <div class="payment-row-meta">
+                    <div class="payment-row-amount"
+                         th:text="${'INR ' + #numbers.formatDecimal(payment.amount, 0, 'COMMA', 2, 'POINT')}">INR 0.00</div>
+                    <div class="payment-row-date" th:text="${#temporals.format(payment.createdAt, 'dd MMM yyyy, hh:mm a')}">05 Apr 2026, 11:30 AM</div>
+                    <div class="payment-row-actions">
+                        <a th:href="@{/payment/details/{paymentId}(paymentId=${payment.paymentId})}" class="booking-action booking-action-secondary">View Details</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

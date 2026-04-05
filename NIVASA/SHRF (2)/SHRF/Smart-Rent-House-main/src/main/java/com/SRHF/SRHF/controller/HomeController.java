@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.time.LocalDate;
@@ -78,6 +79,134 @@ public class HomeController {
         model.addAttribute("totalPropertiesListed", totalPropertiesListed);
         model.addAttribute("totalUsersRegistered", totalUsersRegistered);
         model.addAttribute("totalReviewRating", totalReviewRating);
+    }
+
+    private String resolvePropertyPublicId(Property property, Long fallbackId) {
+        if (property != null && property.getPropertyId() != null && !property.getPropertyId().isBlank()) {
+            return property.getPropertyId();
+        }
+        return fallbackId != null ? String.valueOf(fallbackId) : "";
+    }
+
+    private List<Payment> sortPaymentsNewestFirst(List<Payment> payments) {
+        return payments.stream()
+                .sorted((left, right) -> {
+                    LocalDateTime leftTime = left.getCreatedAt() != null ? left.getCreatedAt() : LocalDateTime.MIN;
+                    LocalDateTime rightTime = right.getCreatedAt() != null ? right.getCreatedAt() : LocalDateTime.MIN;
+                    return rightTime.compareTo(leftTime);
+                })
+                .toList();
+    }
+
+    private Map<Long, Property> loadPropertiesById(List<Payment> payments) {
+        List<Long> propertyIds = payments.stream()
+                .map(Payment::getPropertyId)
+                .filter(id -> id != null)
+                .distinct()
+                .toList();
+
+        Map<Long, Property> propertyById = new HashMap<>();
+        propertyRepository.findAllById(propertyIds)
+                .forEach(property -> propertyById.put(property.getId(), property));
+        return propertyById;
+    }
+
+    private String formatPaymentTypeLabel(String paymentType) {
+        if (paymentType == null || paymentType.isBlank()) {
+            return "Payment";
+        }
+        return switch (paymentType.toUpperCase()) {
+            case "ADVANCE" -> "Advance Payment";
+            case "RENT" -> "Monthly Rent";
+            case "DEPOSIT" -> "Security Deposit";
+            default -> paymentType.substring(0, 1).toUpperCase() + paymentType.substring(1).toLowerCase();
+        };
+    }
+
+    private String formatBookingStatusLabel(String bookingApprovalStatus) {
+        if (bookingApprovalStatus == null || bookingApprovalStatus.isBlank()) {
+            return "Processing";
+        }
+        return switch (bookingApprovalStatus.toUpperCase()) {
+            case "APPROVED" -> "Booking Approved";
+            case "PENDING_APPROVAL" -> "Awaiting Landlord Approval";
+            case "REJECTED" -> "Booking Rejected";
+            default -> bookingApprovalStatus.replace('_', ' ');
+        };
+    }
+
+    private List<TenantBookedPropertyView> buildTenantBookedProperties(List<Payment> tenantPayments,
+                                                                       Map<Long, Property> propertyById) {
+        Map<Long, TenantBookedPropertyView> bookingsByProperty = new LinkedHashMap<>();
+
+        for (Payment payment : sortPaymentsNewestFirst(tenantPayments)) {
+            if (!"ADVANCE".equalsIgnoreCase(payment.getPaymentType())
+                    || !"COMPLETED".equalsIgnoreCase(payment.getStatus())) {
+                continue;
+            }
+
+            String bookingStatus = payment.getBookingApprovalStatus();
+            if (!"PENDING_APPROVAL".equalsIgnoreCase(bookingStatus)
+                    && !"APPROVED".equalsIgnoreCase(bookingStatus)) {
+                continue;
+            }
+
+            Property property = propertyById.get(payment.getPropertyId());
+            if (property == null || bookingsByProperty.containsKey(property.getId())) {
+                continue;
+            }
+
+            String addressLine = property.getAddress();
+            if (property.getCity() != null && !property.getCity().isBlank()) {
+                addressLine = addressLine + ", " + property.getCity();
+            }
+
+            bookingsByProperty.put(property.getId(), new TenantBookedPropertyView(
+                    property.getId(),
+                    resolvePropertyPublicId(property, payment.getPropertyId()),
+                    property.getName(),
+                    addressLine,
+                    property.getOwnerName(),
+                    property.getPrice() != null ? property.getPrice() : 0.0,
+                    payment.getAmount() != null ? payment.getAmount() : 0.0,
+                    bookingStatus,
+                    formatBookingStatusLabel(bookingStatus),
+                    payment.getId(),
+                    payment.getCreatedAt(),
+                    property.getImagesPath() != null && !property.getImagesPath().isBlank()
+            ));
+        }
+
+        return new ArrayList<>(bookingsByProperty.values());
+    }
+
+    private List<TenantPaymentSummaryView> buildTenantRecentPayments(List<Payment> tenantPayments,
+                                                                     Map<Long, Property> propertyById,
+                                                                     int limit) {
+        return sortPaymentsNewestFirst(tenantPayments).stream()
+                .limit(limit)
+                .map(payment -> {
+                    Property property = propertyById.get(payment.getPropertyId());
+                    String propertyName = property != null && property.getName() != null && !property.getName().isBlank()
+                            ? property.getName()
+                            : "Property #" + payment.getPropertyId();
+                    String propertyPublicId = resolvePropertyPublicId(property, payment.getPropertyId());
+                    String bookingStatusLabel = "ADVANCE".equalsIgnoreCase(payment.getPaymentType())
+                            ? formatBookingStatusLabel(payment.getBookingApprovalStatus())
+                            : null;
+
+                    return new TenantPaymentSummaryView(
+                            payment.getId(),
+                            propertyName,
+                            propertyPublicId,
+                            payment.getAmount() != null ? payment.getAmount() : 0.0,
+                            payment.getStatus(),
+                            formatPaymentTypeLabel(payment.getPaymentType()),
+                            bookingStatusLabel,
+                            payment.getCreatedAt()
+                    );
+                })
+                .toList();
     }
 
     @GetMapping("/")
@@ -459,6 +588,164 @@ public class HomeController {
         }
     }
 
+    public static class TenantBookedPropertyView {
+        private final Long internalPropertyId;
+        private final String propertyPublicId;
+        private final String propertyName;
+        private final String addressLine;
+        private final String ownerName;
+        private final Double monthlyRent;
+        private final Double bookingAmount;
+        private final String bookingApprovalStatus;
+        private final String bookingStatusLabel;
+        private final Long paymentId;
+        private final LocalDateTime bookedAt;
+        private final boolean hasImage;
+
+        public TenantBookedPropertyView(Long internalPropertyId,
+                                        String propertyPublicId,
+                                        String propertyName,
+                                        String addressLine,
+                                        String ownerName,
+                                        Double monthlyRent,
+                                        Double bookingAmount,
+                                        String bookingApprovalStatus,
+                                        String bookingStatusLabel,
+                                        Long paymentId,
+                                        LocalDateTime bookedAt,
+                                        boolean hasImage) {
+            this.internalPropertyId = internalPropertyId;
+            this.propertyPublicId = propertyPublicId;
+            this.propertyName = propertyName;
+            this.addressLine = addressLine;
+            this.ownerName = ownerName;
+            this.monthlyRent = monthlyRent;
+            this.bookingAmount = bookingAmount;
+            this.bookingApprovalStatus = bookingApprovalStatus;
+            this.bookingStatusLabel = bookingStatusLabel;
+            this.paymentId = paymentId;
+            this.bookedAt = bookedAt;
+            this.hasImage = hasImage;
+        }
+
+        public Long getInternalPropertyId() {
+            return internalPropertyId;
+        }
+
+        public String getPropertyPublicId() {
+            return propertyPublicId;
+        }
+
+        public String getPropertyName() {
+            return propertyName;
+        }
+
+        public String getAddressLine() {
+            return addressLine;
+        }
+
+        public String getOwnerName() {
+            return ownerName;
+        }
+
+        public Double getMonthlyRent() {
+            return monthlyRent;
+        }
+
+        public Double getBookingAmount() {
+            return bookingAmount;
+        }
+
+        public String getBookingApprovalStatus() {
+            return bookingApprovalStatus;
+        }
+
+        public String getBookingStatusLabel() {
+            return bookingStatusLabel;
+        }
+
+        public Long getPaymentId() {
+            return paymentId;
+        }
+
+        public LocalDateTime getBookedAt() {
+            return bookedAt;
+        }
+
+        public boolean isHasImage() {
+            return hasImage;
+        }
+
+        public boolean isApproved() {
+            return "APPROVED".equalsIgnoreCase(bookingApprovalStatus);
+        }
+
+        public boolean isPendingApproval() {
+            return "PENDING_APPROVAL".equalsIgnoreCase(bookingApprovalStatus);
+        }
+    }
+
+    public static class TenantPaymentSummaryView {
+        private final Long paymentId;
+        private final String propertyName;
+        private final String propertyPublicId;
+        private final Double amount;
+        private final String paymentStatus;
+        private final String paymentTypeLabel;
+        private final String bookingStatusLabel;
+        private final LocalDateTime createdAt;
+
+        public TenantPaymentSummaryView(Long paymentId,
+                                        String propertyName,
+                                        String propertyPublicId,
+                                        Double amount,
+                                        String paymentStatus,
+                                        String paymentTypeLabel,
+                                        String bookingStatusLabel,
+                                        LocalDateTime createdAt) {
+            this.paymentId = paymentId;
+            this.propertyName = propertyName;
+            this.propertyPublicId = propertyPublicId;
+            this.amount = amount;
+            this.paymentStatus = paymentStatus;
+            this.paymentTypeLabel = paymentTypeLabel;
+            this.bookingStatusLabel = bookingStatusLabel;
+            this.createdAt = createdAt;
+        }
+
+        public Long getPaymentId() {
+            return paymentId;
+        }
+
+        public String getPropertyName() {
+            return propertyName;
+        }
+
+        public String getPropertyPublicId() {
+            return propertyPublicId;
+        }
+
+        public Double getAmount() {
+            return amount;
+        }
+
+        public String getPaymentStatus() {
+            return paymentStatus;
+        }
+
+        public String getPaymentTypeLabel() {
+            return paymentTypeLabel;
+        }
+
+        public String getBookingStatusLabel() {
+            return bookingStatusLabel;
+        }
+
+        public LocalDateTime getCreatedAt() {
+            return createdAt;
+        }
+    }
+
     public static class HomeReviewView {
         private final String reviewerName;
         private final String reviewerRole;
@@ -519,11 +806,20 @@ public class HomeController {
             return "redirect:/home";
         }
 
-        // Show only approved + currently available properties.
+        List<Property> availableProperties =
+                propertyRepository.findByVerificationStatusAndAvailabilityStatusOrderByCreatedAtDesc("APPROVED", "AVAILABLE");
+        List<Payment> tenantPayments = sortPaymentsNewestFirst(paymentRepository.findByTenantId(user.getId()));
+        Map<Long, Property> propertyById = loadPropertiesById(tenantPayments);
+        List<TenantBookedPropertyView> bookedProperties = buildTenantBookedProperties(tenantPayments, propertyById);
+        List<TenantPaymentSummaryView> recentPayments = buildTenantRecentPayments(tenantPayments, propertyById, 5);
+
         model.addAttribute("user", user);
-        model.addAttribute("availableProperties",
-                propertyRepository.findByVerificationStatusAndAvailabilityStatusOrderByCreatedAtDesc("APPROVED", "AVAILABLE"));
+        model.addAttribute("availableProperties", availableProperties);
         model.addAttribute("favoriteProperties", user.getFavoriteProperties());
+        model.addAttribute("bookedProperties", bookedProperties);
+        model.addAttribute("recentPayments", recentPayments);
+        model.addAttribute("bookedPropertyCount", bookedProperties.size());
+        model.addAttribute("paymentCount", tenantPayments.size());
         model.addAttribute("canSubmitReview", !appReviewRepository.existsByUserId(user.getId()));
         appReviewRepository.findByUserId(user.getId())
                 .ifPresent(review -> model.addAttribute("existingReview", review));

@@ -1,73 +1,182 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment History - NIVASA</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/payment.css">
-    
+    <style>
+        *{box-sizing:border-box}
+        :root{--accent:#4f46e5;--accent-dark:#3730a3;--bg:#f8fafc;--card:#ffffff;--muted:#64748b;--border:#e2e8f0;--success:#166534;--success-bg:#dcfce7;--warning:#92400e;--warning-bg:#fef3c7;--danger:#991b1b;--danger-bg:#fee2e2;--shadow:0 16px 40px rgba(15,23,42,.08)}
+        html,body{margin:0;font-family:'Noto Sans','Segoe UI',sans-serif;background:linear-gradient(135deg,#eef2ff 0%,#f8fafc 55%,#ecfeff 100%);color:#0f172a;min-height:100vh}
+        .page{max-width:1200px;margin:0 auto;padding:28px 20px 48px}
+        .navbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:28px;padding:16px 18px;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border:1px solid rgba(226,232,240,.9);border-radius:18px;box-shadow:0 10px 30px rgba(15,23,42,.06)}
+        .brand{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--accent);text-decoration:none}
+        .brand img{width:34px;height:34px}
+        .nav-links{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+        .nav-links a{padding:9px 14px;border-radius:999px;text-decoration:none;font-weight:700;color:#334155;background:#fff;border:1px solid #dbe3f2}
+        .nav-links a:hover{border-color:#c7d2fe;color:var(--accent-dark);background:#eef2ff}
+        .hero{background:linear-gradient(135deg,#1d4ed8 0%,#4338ca 45%,#0f766e 100%);color:#fff;border-radius:28px;padding:32px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+        .hero::after{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:rgba(255,255,255,.12);border-radius:50%}
+        .hero h1{position:relative;margin:0 0 8px;font-size:2rem}
+        .hero p{position:relative;margin:0;max-width:640px;line-height:1.6;color:rgba(255,255,255,.9)}
+        .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:24px 0 30px}
+        .summary-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:20px;box-shadow:0 8px 24px rgba(15,23,42,.05)}
+        .summary-label{display:block;color:var(--muted);font-size:.88rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+        .summary-value{display:block;margin-top:10px;font-size:2rem;font-weight:800;color:#0f172a}
+        .section{background:rgba(255,255,255,.92);border:1px solid rgba(226,232,240,.95);border-radius:24px;padding:24px;box-shadow:var(--shadow)}
+        .section-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+        .section-title{margin:0;font-size:1.35rem}
+        .section-note{margin:6px 0 0;color:var(--muted);line-height:1.5}
+        .section-link{color:var(--accent);font-weight:800;text-decoration:none}
+        .payment-list{display:grid;gap:16px}
+        .payment-card{display:grid;grid-template-columns:minmax(0,1.4fr) auto;gap:18px;padding:20px;border:1px solid var(--border);border-radius:20px;background:linear-gradient(180deg,#fff 0%,#f8fafc 100%)}
+        .payment-main{display:grid;gap:10px}
+        .payment-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+        .property-title{margin:0;font-size:1.08rem}
+        .property-text{margin:4px 0 0;color:var(--muted);line-height:1.5}
+        .chip-row{display:flex;gap:8px;flex-wrap:wrap}
+        .chip{display:inline-flex;align-items:center;padding:6px 11px;border-radius:999px;font-size:.78rem;font-weight:800}
+        .chip-success{background:var(--success-bg);color:var(--success)}
+        .chip-warning{background:var(--warning-bg);color:var(--warning)}
+        .chip-danger{background:var(--danger-bg);color:var(--danger)}
+        .chip-neutral{background:#e0e7ff;color:#3730a3}
+        .payment-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+        .meta-box{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:12px 14px}
+        .meta-label{display:block;color:var(--muted);font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+        .meta-value{display:block;color:#0f172a;font-size:.95rem;font-weight:700;line-height:1.45}
+        .payment-side{display:grid;align-content:space-between;justify-items:end;gap:12px;min-width:180px}
+        .amount{font-size:1.55rem;font-weight:900;color:#0f172a}
+        .paid-at{color:var(--muted);font-size:.9rem}
+        .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+        .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:12px;text-decoration:none;font-weight:800;font-size:.92rem}
+        .btn-primary{background:linear-gradient(135deg,var(--accent) 0%,var(--accent-dark) 100%);color:#fff}
+        .btn-secondary{background:#eef2ff;color:var(--accent);border:1px solid #c7d2fe}
+        .empty{padding:48px 20px;text-align:center;color:var(--muted)}
+        .empty h3{margin:14px 0 8px;color:#0f172a}
+        @media (max-width:820px){
+            .payment-card{grid-template-columns:1fr}
+            .payment-side{justify-items:start;min-width:0}
+            .actions{justify-content:flex-start}
+        }
+        @media (max-width:560px){
+            .page{padding:16px 14px 40px}
+            .hero{padding:24px}
+            .hero h1{font-size:1.65rem}
+            .navbar{padding:14px}
+            .nav-links{width:100%}
+            .nav-links a{flex:1 1 calc(50% - 10px);text-align:center}
+        }
+    </style>
+    <link rel="icon" href="/images/nivasa-logo.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/css/professional-theme.css">
-        <link rel="stylesheet" href="/css/chatbot-widget.css">
-<link rel="stylesheet" href="/css/responsive.css">
+    <link rel="stylesheet" href="/css/chatbot-widget.css">
+    <link rel="stylesheet" href="/css/responsive.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <nav class="navbar">
-                <div class="nav-brand">
-                    <a href="/home">NIVASA</a>
+    <div class="page">
+        <nav class="navbar">
+            <a href="/tenant-dashboard" class="brand">
+                <img src="/images/nivasa-logo.svg" alt="NIVASA">
+                <span>NIVASA</span>
+            </a>
+            <div class="nav-links">
+                <a href="/tenant-dashboard">Dashboard</a>
+                <a href="/favorites">Favorites</a>
+                <a href="/tenant/profile">Profile</a>
+                <a href="/logout-tenant">Logout</a>
+            </div>
+        </nav>
+
+        <section class="hero">
+            <h1>Payment History</h1>
+            <p>Review every advance, rent, and deposit payment alongside the property it belongs to. This makes it easier to reopen your booked home and track landlord approval after booking.</p>
+        </section>
+
+        <section class="summary-grid">
+            <article class="summary-card">
+                <span class="summary-label">Total Payments</span>
+                <span class="summary-value" th:text="${paymentCount}">0</span>
+            </article>
+            <article class="summary-card">
+                <span class="summary-label">Completed Payments</span>
+                <span class="summary-value" th:text="${completedPaymentCount}">0</span>
+            </article>
+            <article class="summary-card">
+                <span class="summary-label">Total Paid</span>
+                <span class="summary-value" th:text="${'INR ' + #numbers.formatDecimal(totalPaidAmount, 0, 'COMMA', 2, 'POINT')}">INR 0.00</span>
+            </article>
+        </section>
+
+        <section class="section">
+            <div class="section-top">
+                <div>
+                    <h2 class="section-title">All Payments</h2>
+                    <p class="section-note">Advance payments also show booking approval, so you can tell whether a landlord has approved your booking or it is still pending.</p>
                 </div>
-                <div class="nav-links">
-                    <a href="/home">Home</a>
-                    <a href="/tenant/profile">Profile</a>
-                    <a href="/logout-tenant">Logout</a>
+                <a href="/tenant-dashboard" class="section-link">Back to dashboard</a>
+            </div>
+
+            <div th:if="${#lists.isEmpty(paymentItems)}" class="empty">
+                <div style="font-size:3rem">&#128179;</div>
+                <h3>No payments yet</h3>
+                <p>You can book a property first, and your payment record will appear here automatically.</p>
+                <div style="margin-top:18px">
+                    <a href="/tenant-dashboard" class="btn btn-primary">Browse properties</a>
                 </div>
-            </nav>
-        </header>
+            </div>
 
-        <main class="payment-main">
-            <div class="payment-container">
-                <h1>Payment History</h1>
-
-                <div class="payment-history">
-                    <div th:if="${#lists.isEmpty(payments)}" class="no-payments">
-                        <p>You haven't made any payments yet.</p>
-                        <a href="/home" class="btn btn-primary">Browse Properties</a>
-                    </div>
-
-                    <div th:if="${not #lists.isEmpty(payments)}" class="payments-list">
-                        <div th:each="payment : ${payments}" class="payment-item">
-                            <div class="payment-header">
-                                <div class="payment-amount">
-                                    <span class="amount">&#8377;<span th:text="${#numbers.formatDecimal(payment.amount, 1, 2)}">0.00</span></span>
-                                    <span class="currency">INR</span>
-                                </div>
-                                <div class="payment-status">
-                                    <span th:class="'status-' + ${payment.status.toLowerCase()}"
-                                          th:text="${payment.status}">Status</span>
-                                </div>
+            <div th:unless="${#lists.isEmpty(paymentItems)}" class="payment-list">
+                <article class="payment-card" th:each="item : ${paymentItems}">
+                    <div class="payment-main">
+                        <div class="payment-top">
+                            <div>
+                                <h3 class="property-title" th:text="${item.propertyName}">Property Name</h3>
+                                <p class="property-text" th:text="${item.propertyAddress}">Property Address</p>
                             </div>
-
-                            <div class="payment-details">
-                                <p><strong>Type:</strong> <span th:text="${payment.paymentType}">Type</span></p>
-                                <p th:if="${payment.paymentMethod}"><strong>Method:</strong> <span th:text="${#strings.capitalize(payment.paymentMethod)}">Method</span></p>
-                                <p><strong>Date:</strong> <span th:text="${#temporals.format(payment.createdAt, 'dd MMM yyyy, HH:mm')}">Date</span></p>
-                                <p><strong>Description:</strong> <span th:text="${payment.description}">Description</span></p>
+                            <div class="chip-row">
+                                <span class="chip"
+                                      th:classappend="${item.status == 'COMPLETED'} ? ' chip-success' : (${item.status == 'FAILED'} ? ' chip-danger' : ' chip-warning')"
+                                      th:text="${item.status}">COMPLETED</span>
+                                <span class="chip chip-neutral" th:if="${item.bookingStatusLabel != null}" th:text="${item.bookingStatusLabel}">Awaiting Landlord Approval</span>
                             </div>
+                        </div>
 
-                            <div class="payment-actions">
-                                <a th:href="'/payment/details/' + ${payment.id}" class="btn btn-secondary btn-sm">View Details</a>
-                                <a th:href="'/payment/download-receipt/' + ${payment.id}" class="btn btn-primary btn-sm">Download Receipt</a>
+                        <div class="payment-meta">
+                            <div class="meta-box">
+                                <span class="meta-label">Payment Type</span>
+                                <span class="meta-value" th:text="${item.paymentTypeLabel}">Advance Payment</span>
+                            </div>
+                            <div class="meta-box">
+                                <span class="meta-label">Method</span>
+                                <span class="meta-value" th:text="${item.paymentMethodLabel}">Card</span>
+                            </div>
+                            <div class="meta-box">
+                                <span class="meta-label">Property ID</span>
+                                <span class="meta-value" th:text="${item.propertyPublicId}">0000000000</span>
+                            </div>
+                            <div class="meta-box">
+                                <span class="meta-label">Description</span>
+                                <span class="meta-value" th:text="${item.description != null && !#strings.isEmpty(item.description) ? item.description : 'Payment processed through NIVASA'}">Payment description</span>
                             </div>
                         </div>
                     </div>
-                </div>
+
+                    <div class="payment-side">
+                        <div>
+                            <div class="amount" th:text="${'INR ' + #numbers.formatDecimal(item.amount, 0, 'COMMA', 2, 'POINT')}">INR 0.00</div>
+                            <div class="paid-at" th:if="${item.createdAt != null}" th:text="${#temporals.format(item.createdAt, 'dd MMM yyyy, hh:mm a')}">05 Apr 2026, 11:30 AM</div>
+                            <div class="paid-at" th:unless="${item.createdAt != null}">Date not available</div>
+                        </div>
+                        <div class="actions">
+                            <a th:href="@{/property/{id}(id=${item.propertyPublicId})}" class="btn btn-secondary">View Property</a>
+                            <a th:href="@{/payment/details/{paymentId}(paymentId=${item.paymentId})}" class="btn btn-secondary">Details</a>
+                            <a th:href="@{/payment/download-receipt/{paymentId}(paymentId=${item.paymentId})}" class="btn btn-primary">Receipt</a>
+                        </div>
+                    </div>
+                </article>
             </div>
-        </main>
+        </section>
     </div>
     <script src="/js/chatbot-widget.js"></script>
 </body>
 </html>
-
-

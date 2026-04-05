@@ -1,20 +1,113 @@
-/* Global responsive behavior shared by all templates */
-html, body {
+/* Shared responsive behavior for phones, tablets, laptops, Android, and iOS */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+html,
+body {
   max-width: 100%;
   overflow-x: hidden;
 }
 
-img, svg, video, canvas {
+body {
+  overflow-wrap: break-word;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+img,
+svg,
+video,
+canvas,
+iframe {
   max-width: 100%;
+}
+
+img,
+svg,
+video,
+canvas {
   height: auto;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+  max-width: 100%;
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+a,
+button,
+.btn,
+.action-btn,
+.action-card,
+.logout-btn,
+.payment-button,
+.property-btn,
+.nav-links a,
+.nav-menu a {
+  touch-action: manipulation;
+}
+
+.container,
+.content,
+.wrap,
+main,
+.section,
+.card,
+.payment-container,
+.search-section,
+.review-section,
+.modal-content {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .table-container,
 .table-wrapper,
+.table-wrap,
 .responsive-table,
 .table-responsive {
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+.table-container table,
+.table-wrapper table,
+.table-wrap table,
+.responsive-table table,
+.table-responsive table {
+  width: 100%;
+}
+
+@media (max-width: 1200px) {
+  .container,
+  .content,
+  .wrap,
+  main {
+    padding-left: clamp(16px, 2.5vw, 24px) !important;
+    padding-right: clamp(16px, 2.5vw, 24px) !important;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -31,26 +124,40 @@ img, svg, video, canvas {
   .dashboard-grid,
   .action-grid,
   .properties-list,
+  .properties-grid,
   .testimonials-grid,
   .features-grid,
   .steps-grid,
   .footer-content,
   .filter-row,
   .info-grid,
-  .tenant-options {
+  .tenant-options,
+  .wallet-grid,
+  .quick-stats,
+  .summary-grid,
+  .bookings-grid,
+  .location-display,
+  .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 
   .nav-links,
-  .nav-menu {
+  .nav-menu,
+  .navbar-right {
     gap: 12px !important;
     flex-wrap: wrap;
+    min-width: 0;
   }
 }
 
 @media (max-width: 768px) {
-  h1 { font-size: 1.65rem !important; }
-  h2 { font-size: 1.35rem !important; }
+  h1 {
+    font-size: 1.65rem !important;
+  }
+
+  h2 {
+    font-size: 1.35rem !important;
+  }
 
   .container,
   .content,
@@ -59,7 +166,8 @@ img, svg, video, canvas {
   .section,
   .card,
   .payment-container,
-  .search-section {
+  .search-section,
+  .review-section {
     padding: 16px !important;
   }
 
@@ -72,6 +180,8 @@ img, svg, video, canvas {
     gap: 10px;
     padding-top: 12px !important;
     padding-bottom: 12px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
   }
 
   .logo,
@@ -80,11 +190,15 @@ img, svg, video, canvas {
   .nav-menu,
   .user-info {
     width: 100%;
+    min-width: 0;
     justify-content: flex-start !important;
   }
 
   .nav-links a,
   .nav-menu a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     white-space: normal;
     line-height: 1.35;
   }
@@ -94,6 +208,7 @@ img, svg, video, canvas {
   .dashboard-grid,
   .action-grid,
   .properties-list,
+  .properties-grid,
   .testimonials-grid,
   .features-grid,
   .steps-grid,
@@ -104,7 +219,14 @@ img, svg, video, canvas {
   .property-footer,
   .form-row,
   .payment-methods-grid,
-  .tenant-options {
+  .tenant-options,
+  .wallet-grid,
+  .summary-grid,
+  .bookings-grid,
+  .booking-stats,
+  .payment-meta,
+  .location-display,
+  .grid {
     grid-template-columns: 1fr !important;
   }
 
@@ -114,9 +236,26 @@ img, svg, video, canvas {
   .payment-header,
   .action-buttons,
   .actions,
-  .links {
+  .links,
+  .payment-top,
+  .payment-row,
+  .wallet-item,
+  .booking-item,
+  .section-top {
     flex-direction: column;
     align-items: stretch !important;
+  }
+
+  .payment-card,
+  .payment-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .payment-side,
+  .wallet-right {
+    justify-items: start !important;
+    text-align: left !important;
+    min-width: 0 !important;
   }
 
   .btn,
@@ -124,9 +263,37 @@ img, svg, video, canvas {
   .logout-btn,
   .payment-button,
   .property-btn,
-  button[type="submit"] {
+  .booking-action,
+  button[type="submit"],
+  button[type="button"],
+  input[type="submit"],
+  input[type="button"] {
     width: 100%;
+    min-height: 44px;
     text-align: center;
+  }
+
+  .chatbot-toggle,
+  .chatbot-close {
+    width: auto !important;
+    min-height: auto !important;
+  }
+
+  .chatbot-toggle {
+    right: 12px !important;
+    left: auto !important;
+    bottom: 12px !important;
+  }
+
+  .chatbot-panel {
+    right: 12px !important;
+    left: auto !important;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
   }
 
   .modal-content {
@@ -135,7 +302,83 @@ img, svg, video, canvas {
     overflow-y: auto;
   }
 
-  table { min-width: 700px; }
+  .table-container table,
+  .table-wrapper table,
+  .table-wrap table,
+  .responsive-table table,
+  .table-responsive table {
+    min-width: 560px;
+  }
+}
+
+@media (max-width: 640px) {
+  .navbar > .nav-links,
+  .navbar > .nav-menu,
+  .nav-bar > .nav-links,
+  .nav-bar > .nav-menu,
+  .navbar > .navbar-right .nav-links,
+  .nav-bar > .navbar-right .nav-links {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 10px !important;
+    width: 100%;
+    padding: 12px;
+    border-radius: 16px;
+    background: rgba(248, 250, 252, 0.96);
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  }
+
+  .navbar > .nav-links a:not(.logout-btn),
+  .navbar > .nav-menu a:not(.btn-login),
+  .nav-bar > .nav-links a:not(.logout-btn),
+  .nav-bar > .nav-menu a:not(.btn-login),
+  .navbar > .navbar-right .nav-links a:not(.logout-btn),
+  .nav-bar > .navbar-right .nav-links a:not(.logout-btn) {
+    display: flex !important;
+    width: 100%;
+    min-height: 46px;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0 !important;
+    padding: 10px 12px;
+    text-align: center;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  }
+
+  .navbar > .nav-links .logout-btn,
+  .navbar > .nav-menu .btn-login,
+  .nav-bar > .nav-links .logout-btn,
+  .nav-bar > .nav-menu .btn-login,
+  .navbar > .navbar-right .nav-links .logout-btn,
+  .nav-bar > .navbar-right .nav-links .logout-btn {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin-left: 0 !important;
+    text-align: center;
+  }
+
+  .navbar > .navbar-right,
+  .nav-bar > .navbar-right {
+    display: grid !important;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .navbar > .navbar-right .user-info,
+  .nav-bar > .navbar-right .user-info {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 14px;
+    justify-content: flex-start !important;
+    background: rgba(248, 250, 252, 0.96);
+    border: 1px solid rgba(226, 232, 240, 0.95);
+  }
 }
 
 @media (max-width: 480px) {
@@ -158,9 +401,63 @@ img, svg, video, canvas {
     padding-right: 16px !important;
   }
 
+  .nav-links,
+  .nav-menu {
+    gap: 8px !important;
+  }
+
+  .navbar > .nav-links,
+  .navbar > .nav-menu,
+  .nav-bar > .nav-links,
+  .nav-bar > .nav-menu,
+  .navbar > .navbar-right .nav-links,
+  .nav-bar > .navbar-right .nav-links {
+    grid-template-columns: 1fr !important;
+    padding: 10px;
+  }
+
+  .nav-links a,
+  .nav-menu a {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .section,
+  .card,
+  .payment-card,
+  .booking-card,
+  .payment-item {
+    padding: 16px !important;
+    border-radius: 16px !important;
+  }
+
+  .stats-grid,
+  .summary-grid {
+    grid-template-columns: 1fr !important;
+  }
+
   .stat-number,
   .stat-value,
   .amount {
-    font-size: 1.9rem !important;
+    font-size: clamp(1.4rem, 6vw, 1.9rem) !important;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  a,
+  button,
+  .btn,
+  .action-card,
+  .property-item,
+  .card {
+    -webkit-tap-highlight-color: rgba(79, 70, 229, 0.16);
+  }
+
+  .btn:hover,
+  .action-btn:hover,
+  .action-card:hover,
+  .property-item:hover,
+  .card:hover {
+    transform: none !important;
   }
 }

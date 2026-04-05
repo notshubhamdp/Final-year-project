@@ -26,6 +26,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +78,96 @@ public class PaymentController {
         } catch (NumberFormatException ex) {
             return Optional.empty();
         }
+    }
+
+    private String resolvePropertyPublicId(Property property, Long fallbackId) {
+        if (property != null && property.getPropertyId() != null && !property.getPropertyId().isBlank()) {
+            return property.getPropertyId();
+        }
+        return fallbackId != null ? String.valueOf(fallbackId) : "";
+    }
+
+    private List<Payment> sortPaymentsNewestFirst(List<Payment> payments) {
+        return payments.stream()
+                .sorted((left, right) -> {
+                    LocalDateTime leftTime = left.getCreatedAt() != null ? left.getCreatedAt() : LocalDateTime.MIN;
+                    LocalDateTime rightTime = right.getCreatedAt() != null ? right.getCreatedAt() : LocalDateTime.MIN;
+                    return rightTime.compareTo(leftTime);
+                })
+                .toList();
+    }
+
+    private Map<Long, Property> loadPropertiesById(List<Payment> payments) {
+        List<Long> propertyIds = payments.stream()
+                .map(Payment::getPropertyId)
+                .filter(id -> id != null)
+                .distinct()
+                .toList();
+
+        Map<Long, Property> propertyById = new HashMap<>();
+        propertyRepository.findAllById(propertyIds)
+                .forEach(property -> propertyById.put(property.getId(), property));
+        return propertyById;
+    }
+
+    private String formatPaymentTypeLabel(String paymentType) {
+        if (paymentType == null || paymentType.isBlank()) {
+            return "Payment";
+        }
+        return switch (paymentType.toUpperCase()) {
+            case "ADVANCE" -> "Advance Payment";
+            case "RENT" -> "Monthly Rent";
+            case "DEPOSIT" -> "Security Deposit";
+            default -> paymentType.substring(0, 1).toUpperCase() + paymentType.substring(1).toLowerCase();
+        };
+    }
+
+    private String formatPaymentMethodLabel(String paymentMethod) {
+        if (paymentMethod == null || paymentMethod.isBlank()) {
+            return "Online";
+        }
+        return paymentMethod.substring(0, 1).toUpperCase() + paymentMethod.substring(1).toLowerCase();
+    }
+
+    private String formatBookingStatusLabel(String bookingApprovalStatus) {
+        if (bookingApprovalStatus == null || bookingApprovalStatus.isBlank() || "NOT_APPLICABLE".equalsIgnoreCase(bookingApprovalStatus)) {
+            return null;
+        }
+        return switch (bookingApprovalStatus.toUpperCase()) {
+            case "APPROVED" -> "Booking Approved";
+            case "PENDING_APPROVAL" -> "Awaiting Landlord Approval";
+            case "REJECTED" -> "Booking Rejected";
+            default -> bookingApprovalStatus.replace('_', ' ');
+        };
+    }
+
+    private List<PaymentHistoryItemView> buildPaymentHistoryItems(List<Payment> payments, Map<Long, Property> propertyById) {
+        return sortPaymentsNewestFirst(payments).stream()
+                .map(payment -> {
+                    Property property = propertyById.get(payment.getPropertyId());
+                    String propertyName = property != null && property.getName() != null && !property.getName().isBlank()
+                            ? property.getName()
+                            : "Property #" + payment.getPropertyId();
+
+                    String propertyAddress = property != null && property.getAddress() != null
+                            ? property.getAddress() + ((property.getCity() != null && !property.getCity().isBlank()) ? ", " + property.getCity() : "")
+                            : "Property reference: " + resolvePropertyPublicId(property, payment.getPropertyId());
+
+                    return new PaymentHistoryItemView(
+                            payment.getId(),
+                            propertyName,
+                            resolvePropertyPublicId(property, payment.getPropertyId()),
+                            propertyAddress,
+                            payment.getAmount() != null ? payment.getAmount() : 0.0,
+                            payment.getStatus(),
+                            formatPaymentTypeLabel(payment.getPaymentType()),
+                            formatPaymentMethodLabel(payment.getPaymentMethod()),
+                            formatBookingStatusLabel(payment.getBookingApprovalStatus()),
+                            payment.getDescription(),
+                            payment.getCreatedAt()
+                    );
+                })
+                .toList();
     }
 
     @GetMapping("/checkout")
@@ -432,9 +523,23 @@ public class PaymentController {
         User user = userRepository.findByemail(authentication.getName())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        List<Payment> payments = paymentService.getPaymentsByTenant(user.getId());
-        model.addAttribute("payments", payments);
+        List<Payment> payments = sortPaymentsNewestFirst(paymentService.getPaymentsByTenant(user.getId()));
+        Map<Long, Property> propertyById = loadPropertiesById(payments);
+        List<PaymentHistoryItemView> paymentItems = buildPaymentHistoryItems(payments, propertyById);
+
+        double totalPaidAmount = payments.stream()
+                .filter(payment -> "COMPLETED".equalsIgnoreCase(payment.getStatus()))
+                .mapToDouble(payment -> payment.getAmount() != null ? payment.getAmount() : 0.0)
+                .sum();
+        long completedPaymentCount = payments.stream()
+                .filter(payment -> "COMPLETED".equalsIgnoreCase(payment.getStatus()))
+                .count();
+
+        model.addAttribute("paymentItems", paymentItems);
         model.addAttribute("user", user);
+        model.addAttribute("paymentCount", payments.size());
+        model.addAttribute("completedPaymentCount", completedPaymentCount);
+        model.addAttribute("totalPaidAmount", totalPaidAmount);
         return "payment-history";
     }
 
@@ -516,6 +621,88 @@ public class PaymentController {
         } catch (Exception e) {
             logger.error("Error downloading receipt for payment {}", paymentId, e);
             return ResponseEntity.status(500).build();
+        }
+    }
+
+    public static class PaymentHistoryItemView {
+        private final Long paymentId;
+        private final String propertyName;
+        private final String propertyPublicId;
+        private final String propertyAddress;
+        private final Double amount;
+        private final String status;
+        private final String paymentTypeLabel;
+        private final String paymentMethodLabel;
+        private final String bookingStatusLabel;
+        private final String description;
+        private final LocalDateTime createdAt;
+
+        public PaymentHistoryItemView(Long paymentId,
+                                      String propertyName,
+                                      String propertyPublicId,
+                                      String propertyAddress,
+                                      Double amount,
+                                      String status,
+                                      String paymentTypeLabel,
+                                      String paymentMethodLabel,
+                                      String bookingStatusLabel,
+                                      String description,
+                                      LocalDateTime createdAt) {
+            this.paymentId = paymentId;
+            this.propertyName = propertyName;
+            this.propertyPublicId = propertyPublicId;
+            this.propertyAddress = propertyAddress;
+            this.amount = amount;
+            this.status = status;
+            this.paymentTypeLabel = paymentTypeLabel;
+            this.paymentMethodLabel = paymentMethodLabel;
+            this.bookingStatusLabel = bookingStatusLabel;
+            this.description = description;
+            this.createdAt = createdAt;
+        }
+
+        public Long getPaymentId() {
+            return paymentId;
+        }
+
+        public String getPropertyName() {
+            return propertyName;
+        }
+
+        public String getPropertyPublicId() {
+            return propertyPublicId;
+        }
+
+        public String getPropertyAddress() {
+            return propertyAddress;
+        }
+
+        public Double getAmount() {
+            return amount;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public String getPaymentTypeLabel() {
+            return paymentTypeLabel;
+        }
+
+        public String getPaymentMethodLabel() {
+            return paymentMethodLabel;
+        }
+
+        public String getBookingStatusLabel() {
+            return bookingStatusLabel;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public LocalDateTime getCreatedAt() {
+            return createdAt;
         }
     }
 

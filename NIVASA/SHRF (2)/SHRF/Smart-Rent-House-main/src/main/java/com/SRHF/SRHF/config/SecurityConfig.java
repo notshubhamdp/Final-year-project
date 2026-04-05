@@ -24,7 +24,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(req -> req
-                    .requestMatchers("/", "/home", "/register/**", "/login", "/forgot-password/**", "/css/**", "/js/**", "/images/**", "/uploads/**", "/terms", "/terms.html", "/privacy-policy", "/privacy-policy.html", "/contact-us", "/contact-us.html", "/faq", "/faq.html", "/api/chatbot/**", "/api/ai-chat/**").permitAll()
+                    .requestMatchers("/", "/home", "/register/**", "/login", "/forgot-password/**", "/css/**", "/js/**", "/images/**", "/uploads/**", "/terms", "/terms.html", "/privacy-policy", "/privacy-policy.html", "/contact-us", "/contact-us.html", "/faq", "/faq.html", "/api/chatbot/**").permitAll()
                     .requestMatchers("/payment/test-email").permitAll()
                     .requestMatchers("/payment/webhook").permitAll()
                     .requestMatchers("/role-selection/**").authenticated()
@@ -39,7 +39,7 @@ public class SecurityConfig {
                     .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf
-                    .ignoringRequestMatchers("/payment/**", "/api/ai-chat/**")
+                    .ignoringRequestMatchers("/payment/**")
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
