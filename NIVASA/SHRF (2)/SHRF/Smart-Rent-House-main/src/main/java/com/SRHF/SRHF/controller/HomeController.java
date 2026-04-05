@@ -793,7 +793,7 @@ public class HomeController {
 
         public String getStarText() {
             int safeRating = Math.max(1, Math.min(5, rating != null ? rating : 1));
-            return "★".repeat(safeRating);
+            return "\u2605".repeat(safeRating) + "\u2606".repeat(5 - safeRating);
         }
     }
 

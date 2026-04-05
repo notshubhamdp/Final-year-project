@@ -111,11 +111,11 @@
         .testimonial-card:nth-child(2){animation-delay:0.2s}
         .testimonial-card:nth-child(3){animation-delay:0.3s}
         .testimonial-card:hover{transform:translateY(-8px);box-shadow:0 12px 40px rgba(2,6,23,0.3);background:linear-gradient(135deg,rgba(255,255,255,0.12) 0%,rgba(255,255,255,0.08) 100%)}
-        .testimonial-text{color:rgba(255,255,255,0.95);font-size:1rem;margin-bottom:20px;line-height:1.7;font-style:italic;position:relative}
-        .testimonial-text::before{content:'"';font-size:4rem;color:rgba(255,255,255,0.2);position:absolute;top:-20px;left:-10px;font-family:serif}
-        .testimonial-author{font-weight:700;color:rgba(255,255,255,0.98);margin:12px 0;font-size:1.1rem}
-        .testimonial-role{font-size:0.95rem;color:rgba(255,255,255,0.8);font-weight:500}
-        .stars{color:#ffd166;margin-bottom:12px;font-size:1.2rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))}
+        .testimonial-text{color:#000000;font-size:1rem;margin-bottom:20px;line-height:1.7;font-style:italic;position:relative}
+        .testimonial-text::before{content:'"';font-size:4rem;color:rgba(0,0,0,0.18);position:absolute;top:-20px;left:-10px;font-family:serif}
+        .testimonial-author{font-weight:700;color:#000000;margin:12px 0;font-size:1.1rem}
+        .testimonial-role{font-size:0.95rem;color:rgba(0,0,0,0.75);font-weight:500}
+        .stars{color:#ffd166;margin-bottom:12px;font-size:1.2rem;letter-spacing:0.14rem;white-space:nowrap;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))}
         .stars{color:#ffd166;margin-bottom:8px}
         
         /* CTA SECTION */
@@ -379,7 +379,7 @@
         <h2 class="section-title">What Our Users Say</h2>
         <div class="testimonials-grid" th:if="${homeReviews != null and !#lists.isEmpty(homeReviews)}">
             <div class="testimonial-card" th:each="review : ${homeReviews}">
-                <div class="stars" th:text="${review.starText}">...&copy;</div>
+                <div class="stars" th:text="${review.starText}">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
                 <p class="testimonial-text" th:text="${review.reviewText}">Great platform.</p>
                 <div class="testimonial-author" th:text="${review.reviewerName}">User Name</div>
                 <div class="testimonial-role" th:text="${review.roleAndCity}">Tenant, City</div>
@@ -387,19 +387,19 @@
         </div>
         <div class="testimonials-grid" th:if="${homeReviews == null or #lists.isEmpty(homeReviews)}">
             <div class="testimonial-card">
-                <div class="stars">...&copy;</div>
+                <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
                 <p class="testimonial-text">"Smart Rent House made finding my apartment so easy. Everything was transparent and the landlord was responsive. Highly recommended!"</p>
                 <div class="testimonial-author">Priya Sharma</div>
                 <div class="testimonial-role">Tenant, Mumbai</div>
             </div>
             <div class="testimonial-card">
-                <div class="stars">...&copy;</div>
+                <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
                 <p class="testimonial-text">"As a landlord, this platform helped me find reliable tenants quickly. The verification process is thorough and the management tools are excellent."</p>
                 <div class="testimonial-author">Rajesh Patel</div>
                 <div class="testimonial-role">Landlord, Bangalore</div>
             </div>
             <div class="testimonial-card">
-                <div class="stars">...&copy;</div>
+                <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
                 <p class="testimonial-text">"The best rental platform I've used. Great customer support, secure transactions, and a huge variety of properties. Worth every moment!"</p>
                 <div class="testimonial-author">Anjali Desai</div>
                 <div class="testimonial-role">Tenant, Pune</div>
@@ -490,8 +490,6 @@
     </script>
 </body>
 </html>
-
-
 
 
 
