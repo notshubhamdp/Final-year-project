@@ -24,8 +24,8 @@ spring:
     mail:
       host: smtp.gmail.com
       port: 587
-      username: Enter_username
-      password: Enter_Password
+      username: smartrenthouseotp@gmail.com
+      password: rtubqmcgttfkagvi
       properties:
         mail:
           smtp:
@@ -59,6 +59,8 @@ app:
     visit-reminder:
         cron: "0 0 * * * *"
         zone: "Asia/Kolkata"
+    google-maps:
+        api-key: "AIzaSyAze0tF_0266Wd7JIp-oSWKXhlSqwQacV8"
     payment:
         zone: "Asia/Kolkata"
         late-fee:
@@ -72,9 +74,4 @@ app:
         return-url: "http://localhost:8085/payment/connect/return"
         refresh-url: "http://localhost:8085/payment/connect/refresh"
         platform-fee-percent: 0
-
-openai:
-    enabled: false
-    api-key: ""
-    model: "gpt-4.1-mini"
 

@@ -93,7 +93,7 @@
 
                 <div class="action-buttons">
                     <a href="/payment/history" class="btn btn-secondary">Back to History</a>
-                    <a th:href="'/payment/download-receipt/' + ${payment.id}" class="btn btn-primary">Download Receipt</a>
+                    <a th:if="${payment.tenantId == user.id}" th:href="'/payment/download-receipt/' + ${payment.id}" class="btn btn-primary">Download Receipt</a>
                     <a th:if="${property != null}" th:href="'/property/' + ${property.propertyId}" class="btn btn-primary">View Property</a>
                 </div>
             </div>
@@ -102,6 +102,5 @@
     <script src="/js/chatbot-widget.js"></script>
 </body>
 </html>
-
 
 

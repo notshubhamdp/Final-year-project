@@ -47,7 +47,7 @@
     </style>
     <link rel='stylesheet' href='/css/landlord-property-form.css'>
     <!-- Load Google Maps JS FIRST (with Places library) before other scripts -->
-    <script async defer src="https://maps.googleapis.com/maps/api/jskey=AIzaSyAze0tF_0266Wd7JIp-oSWKXhlSqwQacV8&libraries=places"></script>
+    <script async defer th:src="@{|https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&libraries=places|}"></script>
     <script src='/js/landlord-property-form_1.js'></script>
     <script src='/js/landlord-property-form_2.js'></script>
         
@@ -285,7 +285,6 @@ document.addEventListener('DOMContentLoaded', waitForGoogleMapsAndInit);
     <script src="/js/chatbot-widget.js"></script>
 </body>
 </html>
-
 
 
 

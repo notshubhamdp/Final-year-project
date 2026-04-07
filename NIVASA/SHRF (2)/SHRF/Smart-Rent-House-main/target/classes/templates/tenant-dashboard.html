@@ -238,7 +238,13 @@
     </style>
     <link rel="icon" href="/images/nivasa-logo.svg" type="image/svg+xml">
     <link rel='stylesheet' href='/css/tenant-dashboard.css'>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAze0tF_0266Wd7JIp-oSWKXhlSqwQacV8&libraries=places&callback=initTenantMaps"></script>
+    <script>
+        window._googleMapsReady = false;
+        function initTenantMaps() {
+            window._googleMapsReady = true;
+        }
+    </script>
+    <script async defer th:src="@{|https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&libraries=places&callback=initTenantMaps|}"></script>
     
     <link rel="stylesheet" href="/css/professional-theme.css">
         <link rel="stylesheet" href="/css/chatbot-widget.css">
@@ -396,7 +402,16 @@
                 <div class="booking-actions">
                     <a th:href="@{/property/{id}(id=${booking.propertyPublicId})}" class="booking-action booking-action-primary">View Property</a>
                     <a th:href="@{/payment/details/{paymentId}(paymentId=${booking.paymentId})}" class="booking-action booking-action-secondary">Payment Details</a>
+                    <a th:if="${booking.canPayMonthlyRent}"
+                       th:href="@{/payment/checkout(propertyId=${booking.propertyPublicId},amount=${booking.monthlyRent},paymentType='RENT')}"
+                       class="booking-action booking-action-primary">Pay Monthly Rent</a>
+                    <a th:if="${booking.currentRentPaid and booking.currentRentPaymentId != null}"
+                       th:href="@{/payment/details/{paymentId}(paymentId=${booking.currentRentPaymentId})}"
+                       class="booking-action booking-action-secondary">View Rent Payment</a>
                 </div>
+                <div class="payment-mini-chip" th:text="${booking.currentRentStatusLabel}">Monthly rent status</div>
+                <div class="booking-property-meta" th:if="${booking.currentRentDueDate != null}"
+                     th:text="${'Current rent due on ' + #temporals.format(booking.currentRentDueDate, 'dd MMM yyyy')}">Current rent due on 05 Apr 2026</div>
             </div>
         </div>
     </div>
@@ -619,11 +634,6 @@
 </div>
 
 <script>
-// Initialize Google Maps
-function initTenantMaps() { 
-    window._googleMapsReady = true; 
-}
-
 // Advanced Filtering and Sorting
 class PropertyFilter {
     constructor() {
@@ -753,7 +763,6 @@ if (menuToggle && tenantNavLinks) {
     <script src="/js/chatbot-widget.js"></script>
 </body>
 </html>
-
 
 
 

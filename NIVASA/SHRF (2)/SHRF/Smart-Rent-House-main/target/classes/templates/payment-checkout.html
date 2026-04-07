@@ -168,14 +168,13 @@
     <script th:inline="javascript">
         /*<![CDATA[*/
         // Mock payment handling with multiple payment methods
-        
-        // Extract URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const propertyId = urlParams.get('propertyId');
-        const paymentTypeParam = urlParams.get('paymentType');
-        const amount = urlParams.get('amount');
-        
-        console.log('Payment Details:', { propertyId, paymentTypeParam, amount });
+        const checkoutContext = {
+            propertyId: /*[[${propertyRef}]]*/ '',
+            paymentType: /*[[${paymentType}]]*/ 'ADVANCE',
+            amount: /*[[${amount}]]*/ 0
+        };
+
+        console.log('Payment Details:', checkoutContext);
 
         // Handle payment method selection
         const paymentMethodInputs = document.querySelectorAll('input[name="paymentMethod"]');
@@ -297,8 +296,8 @@
 
                 // Get payment method details
                 const paymentData = {
-                    propertyId: propertyId,
-                    paymentType: paymentTypeParam || 'ADVANCE',
+                    propertyId: checkoutContext.propertyId,
+                    paymentType: checkoutContext.paymentType || 'ADVANCE',
                     paymentMethod: selectedMethod
                 };
 
@@ -348,7 +347,7 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        paymentIntentId: data.clientSecret  data.clientSecret.split('_secret_')[0] : 'mock_intent',
+                        paymentIntentId: data.paymentIntentId || (data.clientSecret ? data.clientSecret.split('_secret_')[0] : 'mock_intent'),
                         paymentMethod: selectedMethod
                     })
                 });
@@ -356,14 +355,14 @@
                 console.log('Success notification status:', successResponse.status);
 
                 // Redirect to success page
-                window.location.href = '/payment/success-pagepropertyId=' + propertyId;
+                window.location.href = '/payment/success-page?propertyId=' + encodeURIComponent(checkoutContext.propertyId);
 
             } catch (error) {
                 console.error('Payment error:', error);
                 showError('Payment failed: ' + error.message);
                 submitButton.disabled = false;
                 spinner.style.display = 'none';
-                buttonText.textContent = 'Complete Mock Payment &#8377;' + (amount || '0.00');
+                buttonText.textContent = 'Complete Mock Payment ₹' + (checkoutContext.amount || '0.00');
             }
         });
 
@@ -451,6 +450,5 @@
     <script src="/js/chatbot-widget.js"></script>
 </body>
 </html>
-
 
 

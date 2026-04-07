@@ -20,6 +20,7 @@ import com.SRHF.SRHF.repository.UserRepository;
 import com.SRHF.SRHF.repository.PropertyRepository;
 import com.SRHF.SRHF.repository.PaymentRepository;
 import com.SRHF.SRHF.repository.AppReviewRepository;
+import com.SRHF.SRHF.service.PaymentService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -35,15 +36,18 @@ public class HomeController {
     private final PropertyRepository propertyRepository;
     private final PaymentRepository paymentRepository;
     private final AppReviewRepository appReviewRepository;
+    private final PaymentService paymentService;
    
     public HomeController(UserRepository userRepository,
                           PropertyRepository propertyRepository,
                           PaymentRepository paymentRepository,
-                          AppReviewRepository appReviewRepository) {
+                          AppReviewRepository appReviewRepository,
+                          PaymentService paymentService) {
         this.userRepository = userRepository;
         this.propertyRepository = propertyRepository;
         this.paymentRepository = paymentRepository;
         this.appReviewRepository = appReviewRepository;
+        this.paymentService = paymentService;
     }
 
     private Optional<Property> resolveProperty(String propertyRef) {
@@ -135,6 +139,49 @@ public class HomeController {
         };
     }
 
+    private List<LandlordActiveRentalView> buildLandlordActiveRentals(Long landlordId,
+                                                                      Map<Long, Property> propertyById,
+                                                                      Map<Long, String> tenantNameCache) {
+        Map<Long, Payment> latestApprovedBookingByProperty = new LinkedHashMap<>();
+
+        paymentRepository.findByLandlordIdAndStatusAndPaymentTypeOrderByCreatedAtDesc(landlordId, "COMPLETED", "ADVANCE")
+                .stream()
+                .filter(payment -> "APPROVED".equalsIgnoreCase(payment.getBookingApprovalStatus()))
+                .forEach(payment -> latestApprovedBookingByProperty.putIfAbsent(payment.getPropertyId(), payment));
+
+        return latestApprovedBookingByProperty.values().stream()
+                .map(booking -> {
+                    Property property = propertyById.get(booking.getPropertyId());
+                    if (property == null) {
+                        return null;
+                    }
+
+                    String tenantName = tenantNameCache.computeIfAbsent(
+                            booking.getTenantId(),
+                            tenantId -> userRepository.findById(tenantId)
+                                    .map(tenant -> (tenant.getFirstName() + " " + tenant.getLastName()).trim())
+                                    .orElse("Tenant")
+                    );
+
+                    PaymentService.RentCycleStatus rentCycleStatus = paymentService.getCurrentRentCycleStatus(booking);
+                    Payment currentRentPayment = rentCycleStatus.currentCyclePayment();
+
+                    return new LandlordActiveRentalView(
+                            property.getName(),
+                            resolvePropertyPublicId(property, booking.getPropertyId()),
+                            tenantName,
+                            property.getPrice() != null ? property.getPrice() : 0.0,
+                            rentCycleStatus.dueDate(),
+                            rentCycleStatus.paidForCurrentCycle(),
+                            currentRentPayment != null ? currentRentPayment.getId() : null,
+                            currentRentPayment != null ? currentRentPayment.getCreatedAt() : null
+                    );
+                })
+                .filter(java.util.Objects::nonNull)
+                .limit(10)
+                .toList();
+    }
+
     private List<TenantBookedPropertyView> buildTenantBookedProperties(List<Payment> tenantPayments,
                                                                        Map<Long, Property> propertyById) {
         Map<Long, TenantBookedPropertyView> bookingsByProperty = new LinkedHashMap<>();
@@ -156,6 +203,11 @@ public class HomeController {
                 continue;
             }
 
+            PaymentService.RentCycleStatus rentCycleStatus = "APPROVED".equalsIgnoreCase(bookingStatus)
+                    ? paymentService.getCurrentRentCycleStatus(payment)
+                    : new PaymentService.RentCycleStatus(null, false, null);
+            Payment currentRentPayment = rentCycleStatus.currentCyclePayment();
+
             String addressLine = property.getAddress();
             if (property.getCity() != null && !property.getCity().isBlank()) {
                 addressLine = addressLine + ", " + property.getCity();
@@ -173,7 +225,10 @@ public class HomeController {
                     formatBookingStatusLabel(bookingStatus),
                     payment.getId(),
                     payment.getCreatedAt(),
-                    property.getImagesPath() != null && !property.getImagesPath().isBlank()
+                    property.getImagesPath() != null && !property.getImagesPath().isBlank(),
+                    rentCycleStatus.dueDate(),
+                    rentCycleStatus.paidForCurrentCycle(),
+                    currentRentPayment != null ? currentRentPayment.getId() : null
             ));
         }
 
@@ -343,6 +398,8 @@ public class HomeController {
                 .limit(10)
                 .toList();
 
+        List<LandlordActiveRentalView> activeRentals = buildLandlordActiveRentals(user.getId(), propertyById, tenantNameCache);
+
         model.addAttribute("user", user);
         model.addAttribute("totalProperties", totalProperties);
         model.addAttribute("pendingCount", pendingCount);
@@ -352,6 +409,7 @@ public class HomeController {
         model.addAttribute("recentProperties", recentProperties);
         model.addAttribute("recentBookings", recentBookings);
         model.addAttribute("pendingBookingApprovals", pendingBookingApprovals);
+        model.addAttribute("activeRentals", activeRentals);
         model.addAttribute("canSubmitReview", !appReviewRepository.existsByUserId(user.getId()));
         appReviewRepository.findByUserId(user.getId())
                 .ifPresent(review -> model.addAttribute("existingReview", review));
@@ -588,6 +646,71 @@ public class HomeController {
         }
     }
 
+    public static class LandlordActiveRentalView {
+        private final String propertyName;
+        private final String propertyId;
+        private final String tenantName;
+        private final Double monthlyRent;
+        private final LocalDate currentRentDueDate;
+        private final boolean currentRentPaid;
+        private final Long currentRentPaymentId;
+        private final LocalDateTime currentRentPaidAt;
+
+        public LandlordActiveRentalView(String propertyName,
+                                        String propertyId,
+                                        String tenantName,
+                                        Double monthlyRent,
+                                        LocalDate currentRentDueDate,
+                                        boolean currentRentPaid,
+                                        Long currentRentPaymentId,
+                                        LocalDateTime currentRentPaidAt) {
+            this.propertyName = propertyName;
+            this.propertyId = propertyId;
+            this.tenantName = tenantName;
+            this.monthlyRent = monthlyRent;
+            this.currentRentDueDate = currentRentDueDate;
+            this.currentRentPaid = currentRentPaid;
+            this.currentRentPaymentId = currentRentPaymentId;
+            this.currentRentPaidAt = currentRentPaidAt;
+        }
+
+        public String getPropertyName() {
+            return propertyName;
+        }
+
+        public String getPropertyId() {
+            return propertyId;
+        }
+
+        public String getTenantName() {
+            return tenantName;
+        }
+
+        public Double getMonthlyRent() {
+            return monthlyRent;
+        }
+
+        public LocalDate getCurrentRentDueDate() {
+            return currentRentDueDate;
+        }
+
+        public boolean isCurrentRentPaid() {
+            return currentRentPaid;
+        }
+
+        public Long getCurrentRentPaymentId() {
+            return currentRentPaymentId;
+        }
+
+        public LocalDateTime getCurrentRentPaidAt() {
+            return currentRentPaidAt;
+        }
+
+        public String getCurrentRentStatusLabel() {
+            return currentRentPaid ? "Monthly rent paid" : "Monthly rent pending";
+        }
+    }
+
     public static class TenantBookedPropertyView {
         private final Long internalPropertyId;
         private final String propertyPublicId;
@@ -601,6 +724,9 @@ public class HomeController {
         private final Long paymentId;
         private final LocalDateTime bookedAt;
         private final boolean hasImage;
+        private final LocalDate currentRentDueDate;
+        private final boolean currentRentPaid;
+        private final Long currentRentPaymentId;
 
         public TenantBookedPropertyView(Long internalPropertyId,
                                         String propertyPublicId,
@@ -613,7 +739,10 @@ public class HomeController {
                                         String bookingStatusLabel,
                                         Long paymentId,
                                         LocalDateTime bookedAt,
-                                        boolean hasImage) {
+                                        boolean hasImage,
+                                        LocalDate currentRentDueDate,
+                                        boolean currentRentPaid,
+                                        Long currentRentPaymentId) {
             this.internalPropertyId = internalPropertyId;
             this.propertyPublicId = propertyPublicId;
             this.propertyName = propertyName;
@@ -626,6 +755,9 @@ public class HomeController {
             this.paymentId = paymentId;
             this.bookedAt = bookedAt;
             this.hasImage = hasImage;
+            this.currentRentDueDate = currentRentDueDate;
+            this.currentRentPaid = currentRentPaid;
+            this.currentRentPaymentId = currentRentPaymentId;
         }
 
         public Long getInternalPropertyId() {
@@ -676,12 +808,35 @@ public class HomeController {
             return hasImage;
         }
 
+        public LocalDate getCurrentRentDueDate() {
+            return currentRentDueDate;
+        }
+
+        public boolean isCurrentRentPaid() {
+            return currentRentPaid;
+        }
+
+        public Long getCurrentRentPaymentId() {
+            return currentRentPaymentId;
+        }
+
         public boolean isApproved() {
             return "APPROVED".equalsIgnoreCase(bookingApprovalStatus);
         }
 
         public boolean isPendingApproval() {
             return "PENDING_APPROVAL".equalsIgnoreCase(bookingApprovalStatus);
+        }
+
+        public boolean isCanPayMonthlyRent() {
+            return isApproved() && !currentRentPaid;
+        }
+
+        public String getCurrentRentStatusLabel() {
+            if (isPendingApproval()) {
+                return "Monthly rent opens after landlord approval";
+            }
+            return currentRentPaid ? "Monthly rent paid for current cycle" : "Monthly rent pending for current cycle";
         }
     }
 
@@ -848,13 +1003,21 @@ public class HomeController {
     @GetMapping("/property/{id}")
     public String propertyDetail(@org.springframework.web.bind.annotation.PathVariable String id, Model model, Authentication authentication) {
         // Add current user if available
+        User currentUser = null;
         if (authentication != null) {
             String email = authentication.getName();
-            userRepository.findByemail(email).ifPresent(user -> model.addAttribute("user", user));
+            currentUser = userRepository.findByemail(email).orElse(null);
+            if (currentUser != null) {
+                model.addAttribute("user", currentUser);
+            }
         }
 
         Property property = resolveProperty(id).orElseThrow(() -> new IllegalArgumentException("Property not found"));
         model.addAttribute("property", property);
+        String propertyRef = property.getPropertyId() != null && !property.getPropertyId().isBlank()
+                ? property.getPropertyId()
+                : String.valueOf(property.getId());
+        model.addAttribute("propertyRef", propertyRef);
 
         // Pass raw images path for the controller to handle
         model.addAttribute("imagesPath", property.getImagesPath());
@@ -881,6 +1044,62 @@ public class HomeController {
         // Suggest advance payment - defaulting to one month's rent (can be changed later)
         Double advance = property.getPrice() != null ? property.getPrice() : 0.0;
         model.addAttribute("advanceAmount", advance);
+
+        Optional<Payment> activeBookingOpt = Optional.empty();
+        boolean canBookProperty = "AVAILABLE".equalsIgnoreCase(property.getAvailabilityStatus());
+        boolean currentTenantBookingPendingApproval = false;
+        boolean currentTenantBookingApproved = false;
+        boolean canPayMonthlyRent = false;
+        boolean currentRentPaid = false;
+        Long currentRentPaymentId = null;
+        LocalDate currentRentDueDate = null;
+        String propertyActionMessage = null;
+
+        if (currentUser != null && "TENANT".equalsIgnoreCase(currentUser.getRole())) {
+            activeBookingOpt = paymentService.getLatestActiveAdvanceBooking(currentUser.getId(), property.getId());
+            if (activeBookingOpt.isPresent()) {
+                Payment activeBooking = activeBookingOpt.get();
+                canBookProperty = false;
+                currentTenantBookingPendingApproval = "PENDING_APPROVAL".equalsIgnoreCase(activeBooking.getBookingApprovalStatus());
+                currentTenantBookingApproved = "APPROVED".equalsIgnoreCase(activeBooking.getBookingApprovalStatus());
+
+                if (currentTenantBookingPendingApproval) {
+                    propertyActionMessage = "Advance payment already completed. Waiting for landlord approval.";
+                } else if (currentTenantBookingApproved) {
+                    PaymentService.RentCycleStatus rentCycleStatus = paymentService.getCurrentRentCycleStatus(activeBooking);
+                    currentRentDueDate = rentCycleStatus.dueDate();
+                    currentRentPaid = rentCycleStatus.paidForCurrentCycle();
+                    currentRentPaymentId = rentCycleStatus.currentCyclePayment() != null
+                            ? rentCycleStatus.currentCyclePayment().getId()
+                            : null;
+                    canPayMonthlyRent = !currentRentPaid;
+                    propertyActionMessage = currentRentPaid
+                            ? "Your booking is approved and the current monthly rent is already paid."
+                            : "Your booking is approved. You can now pay the current monthly rent.";
+                }
+            } else if ("BOOKED_PENDING_APPROVAL".equalsIgnoreCase(property.getAvailabilityStatus())) {
+                canBookProperty = false;
+                propertyActionMessage = "This property already has an advance booking waiting for landlord approval.";
+            } else if ("NOT_AVAILABLE".equalsIgnoreCase(property.getAvailabilityStatus())) {
+                canBookProperty = false;
+                propertyActionMessage = "Property already rented.";
+            }
+        } else if ("BOOKED_PENDING_APPROVAL".equalsIgnoreCase(property.getAvailabilityStatus())) {
+            canBookProperty = false;
+            propertyActionMessage = "This property is currently under booking review.";
+        } else if ("NOT_AVAILABLE".equalsIgnoreCase(property.getAvailabilityStatus())) {
+            canBookProperty = false;
+            propertyActionMessage = "Property already rented.";
+        }
+
+        model.addAttribute("canBookProperty", canBookProperty);
+        model.addAttribute("currentTenantBookingPendingApproval", currentTenantBookingPendingApproval);
+        model.addAttribute("currentTenantBookingApproved", currentTenantBookingApproved);
+        model.addAttribute("canPayMonthlyRent", canPayMonthlyRent);
+        model.addAttribute("currentRentPaid", currentRentPaid);
+        model.addAttribute("currentRentPaymentId", currentRentPaymentId);
+        model.addAttribute("currentRentDueDate", currentRentDueDate);
+        model.addAttribute("propertyActionMessage", propertyActionMessage);
 
         return "property-detail";
     }

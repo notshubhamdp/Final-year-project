@@ -14,7 +14,9 @@ function getPropertyImageState(propertyId) {
 function changeMainImage(imgElement, index) {
     document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
     imgElement.classList.add('active');
-    const propertyId = /*[[${property.id}]]*/ 0;
+    const gallery = imgElement.closest('.gallery');
+    const propertyId = gallery ? gallery.getAttribute('data-property-id') : null;
+    if (!propertyId) return;
     const state = getPropertyImageState(propertyId);
     document.getElementById('mainImage').src = '/tenant/file/image/' + propertyId + '/' + index;
     state.currentIndex = index;
@@ -197,13 +199,15 @@ document.addEventListener('keydown', function(event) {
         }
     }
 
-    // Initialize total images count on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        const gallery = document.querySelector('.gallery');
-        if (gallery) {
-            totalImages = parseInt(gallery.getAttribute('data-image-count')) || 1;
-        }
-    });
+// Initialize total images count on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const gallery = document.querySelector('.gallery');
+    if (gallery) {
+        const propertyId = gallery.getAttribute('data-property-id');
+        const state = getPropertyImageState(propertyId);
+        state.totalImages = parseInt(gallery.getAttribute('data-image-count')) || 1;
+    }
+});
 
     window.addEventListener('load', initPropertyMap);
 

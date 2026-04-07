@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 
@@ -287,6 +288,60 @@ public class PaymentService {
         return savePayment(payment);
     }
 
+    public Optional<Payment> getLatestActiveAdvanceBooking(Long tenantId, Long propertyId) {
+        return paymentRepository.findByTenantIdAndPropertyIdAndStatusAndPaymentTypeOrderByCreatedAtDesc(
+                        tenantId,
+                        propertyId,
+                        "COMPLETED",
+                        "ADVANCE"
+                ).stream()
+                .filter(payment -> "PENDING_APPROVAL".equalsIgnoreCase(payment.getBookingApprovalStatus())
+                        || "APPROVED".equalsIgnoreCase(payment.getBookingApprovalStatus()))
+                .findFirst();
+    }
+
+    public Optional<Payment> getLatestApprovedAdvanceBooking(Long tenantId, Long propertyId) {
+        return paymentRepository.findByTenantIdAndPropertyIdAndStatusAndPaymentTypeOrderByCreatedAtDesc(
+                        tenantId,
+                        propertyId,
+                        "COMPLETED",
+                        "ADVANCE"
+                ).stream()
+                .filter(payment -> "APPROVED".equalsIgnoreCase(payment.getBookingApprovalStatus()))
+                .findFirst();
+    }
+
+    public RentCycleStatus getCurrentRentCycleStatus(Payment approvedBooking) {
+        if (approvedBooking == null
+                || approvedBooking.getTenantId() == null
+                || approvedBooking.getPropertyId() == null
+                || approvedBooking.getCreatedAt() == null) {
+            return new RentCycleStatus(null, false, null);
+        }
+
+        LocalDate today = LocalDate.now();
+        int bookedDay = approvedBooking.getCreatedAt().getDayOfMonth();
+        LocalDate dueDateThisMonth = getDueDateForMonth(YearMonth.from(today), bookedDay);
+        LocalDate previousDueDate = getDueDateForMonth(YearMonth.from(today.minusMonths(1)), bookedDay);
+        LocalDateTime cycleStart = previousDueDate.plusDays(1).atStartOfDay();
+        LocalDateTime cycleEnd = dueDateThisMonth.atTime(23, 59, 59);
+
+        Payment currentCyclePayment = paymentRepository
+                .findByTenantIdAndPropertyIdAndStatusAndPaymentTypeOrderByCreatedAtDesc(
+                        approvedBooking.getTenantId(),
+                        approvedBooking.getPropertyId(),
+                        "COMPLETED",
+                        "RENT"
+                ).stream()
+                .filter(payment -> payment.getCreatedAt() != null
+                        && !payment.getCreatedAt().isBefore(cycleStart)
+                        && !payment.getCreatedAt().isAfter(cycleEnd))
+                .findFirst()
+                .orElse(null);
+
+        return new RentCycleStatus(dueDateThisMonth, currentCyclePayment != null, currentCyclePayment);
+    }
+
     public List<Payment> getScheduledPayouts(Long landlordId) {
         return paymentRepository.findByLandlordIdAndStatus(landlordId, "COMPLETED").stream()
                 .filter(p -> "SCHEDULED".equalsIgnoreCase(p.getPayoutStatus()) || "PAID".equalsIgnoreCase(p.getPayoutStatus()))
@@ -363,5 +418,13 @@ public class PaymentService {
      */
     public List<Payment> getSuccessfulPaymentsByLandlord(Long landlordId) {
         return paymentRepository.findByLandlordIdAndStatus(landlordId, "COMPLETED");
+    }
+
+    private LocalDate getDueDateForMonth(YearMonth yearMonth, int bookedDay) {
+        int day = Math.min(bookedDay, yearMonth.lengthOfMonth());
+        return yearMonth.atDay(day);
+    }
+
+    public record RentCycleStatus(LocalDate dueDate, boolean paidForCurrentCycle, Payment currentCyclePayment) {
     }
 }

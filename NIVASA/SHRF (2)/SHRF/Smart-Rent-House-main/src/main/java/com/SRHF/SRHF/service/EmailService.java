@@ -32,7 +32,7 @@ public class EmailService {
             message.setSubject("Confirm Your Email");
             String messageBody = """
                     Thank you for registering with Smart Rent House.
-                    We’re glad to welcome you to our community.
+                    We're glad to welcome you to our community.
                     
                     To complete your registration, please confirm your email address by clicking the link below:
                     
@@ -42,7 +42,7 @@ public class EmailService {
                     For security reasons, this link will remain active for 5 minutes.
                     If it expires, you can request a new confirmation link anytime from the login page.
                     
-                    If you did not create this account, please ignore this email — no action is required and your information will remain safe.
+                    If you did not create this account, please ignore this email - no action is required and your information will remain safe.
                     
                     Wishing you a smooth and peaceful experience ahead.
                     
@@ -341,13 +341,13 @@ public class EmailService {
             String messageBody = """
                     Dear %s,
                     
-                    Thank you for your payment! We're pleased to confirm that your %s payment of ₹%.2f has been successfully processed.
+                    Thank you for your payment! We're pleased to confirm that your %s payment of INR %.2f has been successfully processed.
                     
                     Your payment receipt is attached to this email. Please keep it for your records and future reference.
                     
                     Payment Details:
                     - Payment Type: %s
-                    - Amount: ₹%.2f
+                    - Amount: INR %.2f
                     - Status: COMPLETED
                     - Reference: NIVASA Payment Portal
                     
@@ -388,7 +388,7 @@ public class EmailService {
                     
                     Payment Details:
                     - Payment Type: %s
-                    - Amount: ₹%.2f
+                    - Amount: INR %.2f
                     - Status: COMPLETED
                     
                     Your payment receipt is available for download from your account dashboard.

@@ -141,6 +141,45 @@ public class PaymentController {
         };
     }
 
+    private PaymentRequestDetails resolvePaymentRequestDetails(Property property, String paymentType) {
+        if (property == null) {
+            throw new IllegalArgumentException("Property not found");
+        }
+        if (property.getLandlordId() == null) {
+            throw new IllegalArgumentException("Property owner not found");
+        }
+        if (paymentType == null || paymentType.isBlank()) {
+            throw new IllegalArgumentException("Payment type is required");
+        }
+
+        String normalizedPaymentType = paymentType.trim().toUpperCase();
+        Double amount;
+        String description;
+
+        switch (normalizedPaymentType) {
+            case "ADVANCE":
+                amount = property.getPrice() != null ? property.getPrice() : 0.0;
+                description = "Advance payment for property: " + property.getName();
+                break;
+            case "RENT":
+                amount = property.getPrice() != null ? property.getPrice() : 0.0;
+                description = "Monthly rent for property: " + property.getName();
+                break;
+            case "DEPOSIT":
+                amount = property.getPrice() != null ? property.getPrice() * 2 : 0.0;
+                description = "Security deposit for property: " + property.getName();
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid payment type");
+        }
+
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Invalid payment amount");
+        }
+
+        return new PaymentRequestDetails(normalizedPaymentType, amount, description);
+    }
+
     private List<PaymentHistoryItemView> buildPaymentHistoryItems(List<Payment> payments, Map<Long, Property> propertyById) {
         return sortPaymentsNewestFirst(payments).stream()
                 .map(payment -> {
@@ -172,7 +211,7 @@ public class PaymentController {
 
     @GetMapping("/checkout")
     public String showCheckout(@RequestParam String propertyId,
-                               @RequestParam Double amount,
+                               @RequestParam(required = false) Double amount,
                                @RequestParam String paymentType,
                                Authentication authentication,
                                Model model,
@@ -185,6 +224,7 @@ public class PaymentController {
         try {
             Property property = resolveProperty(propertyId)
                     .orElseThrow(() -> new IllegalArgumentException("Property not found"));
+            PaymentRequestDetails paymentRequest = resolvePaymentRequestDetails(property, paymentType);
             if ("ADVANCE".equalsIgnoreCase(paymentType) &&
                     ("NOT_AVAILABLE".equalsIgnoreCase(property.getAvailabilityStatus()) ||
                             "BOOKED_PENDING_APPROVAL".equalsIgnoreCase(property.getAvailabilityStatus()))) {
@@ -195,10 +235,36 @@ public class PaymentController {
             User user = userRepository.findByemail(authentication.getName())
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+            String propertyRef = property.getPropertyId() != null && !property.getPropertyId().isBlank()
+                    ? property.getPropertyId()
+                    : String.valueOf(property.getId());
+
+            if ("ADVANCE".equalsIgnoreCase(paymentRequest.paymentType())
+                    && paymentService.getLatestActiveAdvanceBooking(user.getId(), property.getId()).isPresent()) {
+                redirectAttributes.addFlashAttribute("error", "You already completed the advance booking payment for this property.");
+                return "redirect:/property/" + propertyRef;
+            }
+
+            if ("RENT".equalsIgnoreCase(paymentRequest.paymentType())) {
+                Payment approvedBooking = paymentService.getLatestApprovedAdvanceBooking(user.getId(), property.getId())
+                        .orElseThrow(() -> new IllegalArgumentException("Landlord approval is required before paying monthly rent."));
+                PaymentService.RentCycleStatus rentCycleStatus = paymentService.getCurrentRentCycleStatus(approvedBooking);
+                if (rentCycleStatus.paidForCurrentCycle()) {
+                    redirectAttributes.addFlashAttribute("error", "Monthly rent for the current cycle is already paid.");
+                    return "redirect:/property/" + propertyRef;
+                }
+            }
+
+            if (amount != null && Math.abs(amount - paymentRequest.amount()) > 0.01) {
+                logger.warn("Ignoring client-supplied checkout amount {} for property {} and payment type {}. Using canonical amount {} instead.",
+                        amount, propertyRef, paymentRequest.paymentType(), paymentRequest.amount());
+            }
+
             model.addAttribute("property", property);
+            model.addAttribute("propertyRef", propertyRef);
             model.addAttribute("user", user);
-            model.addAttribute("amount", amount);
-            model.addAttribute("paymentType", paymentType);
+            model.addAttribute("amount", paymentRequest.amount());
+            model.addAttribute("paymentType", paymentRequest.paymentType());
             model.addAttribute("stripePublishableKey", stripePublishableKey);
             return "payment-checkout";
         } catch (Exception e) {
@@ -215,6 +281,9 @@ public class PaymentController {
             if (authentication == null) {
                 return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
             }
+            if (request == null || request.get("propertyId") == null || request.get("paymentType") == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Missing payment details"));
+            }
 
             String propertyRef = request.get("propertyId").toString();
             String paymentType = request.get("paymentType").toString().trim();
@@ -222,6 +291,7 @@ public class PaymentController {
 
             Property property = resolveProperty(propertyRef)
                     .orElseThrow(() -> new IllegalArgumentException("Property not found"));
+            PaymentRequestDetails paymentRequest = resolvePaymentRequestDetails(property, paymentType);
             if ("ADVANCE".equalsIgnoreCase(paymentType) &&
                     ("NOT_AVAILABLE".equalsIgnoreCase(property.getAvailabilityStatus()) ||
                             "BOOKED_PENDING_APPROVAL".equalsIgnoreCase(property.getAvailabilityStatus()))) {
@@ -231,44 +301,41 @@ public class PaymentController {
             User tenant = userRepository.findByemail(authentication.getName())
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-            Double amount;
-            String description;
-            switch (paymentType.toUpperCase()) {
-                case "ADVANCE":
-                    amount = property.getPrice() != null ? property.getPrice() : 0.0;
-                    description = "Advance payment for property: " + property.getName();
-                    break;
-                case "RENT":
-                    amount = property.getPrice() != null ? property.getPrice() : 0.0;
-                    description = "Monthly rent for property: " + property.getName();
-                    break;
-                case "DEPOSIT":
-                    amount = property.getPrice() != null ? property.getPrice() * 2 : 0.0;
-                    description = "Security deposit for property: " + property.getName();
-                    break;
-                default:
-                    return ResponseEntity.badRequest().body(Map.of("error", "Invalid payment type"));
+            if ("ADVANCE".equalsIgnoreCase(paymentRequest.paymentType())
+                    && paymentService.getLatestActiveAdvanceBooking(tenant.getId(), property.getId()).isPresent()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Advance booking payment is already completed for this property"));
             }
 
-            Long amountInPaise = Math.round(amount * 100);
-            PaymentIntent paymentIntent = paymentService.createPaymentIntent(amountInPaise, "INR", description);
+            if ("RENT".equalsIgnoreCase(paymentRequest.paymentType())) {
+                Payment approvedBooking = paymentService.getLatestApprovedAdvanceBooking(tenant.getId(), property.getId())
+                        .orElseThrow(() -> new IllegalArgumentException("Landlord approval is required before paying monthly rent."));
+                PaymentService.RentCycleStatus rentCycleStatus = paymentService.getCurrentRentCycleStatus(approvedBooking);
+                if (rentCycleStatus.paidForCurrentCycle()) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Monthly rent for the current cycle is already paid"));
+                }
+            }
+
+            Long amountInPaise = Math.round(paymentRequest.amount() * 100);
+            PaymentIntent paymentIntent = paymentService.createPaymentIntent(amountInPaise, "INR", paymentRequest.description());
 
             Payment payment = paymentService.createPayment(
                     paymentIntent.getId(),
-                    amount,
+                    paymentRequest.amount(),
                     "INR",
                     "PENDING",
                     property.getId(),
                     tenant.getId(),
                     property.getLandlordId(),
-                    paymentType.toUpperCase(),
+                    paymentRequest.paymentType(),
                     paymentMethod,
-                    description
+                    paymentRequest.description()
             );
 
             Map<String, Object> response = new HashMap<>();
             response.put("clientSecret", paymentIntent.getClientSecret());
+            response.put("paymentIntentId", paymentIntent.getId());
             response.put("paymentId", payment.getId());
+            response.put("amount", paymentRequest.amount());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Error creating payment intent", e);
@@ -342,6 +409,9 @@ public class PaymentController {
                                                   @RequestBody(required = false) Map<String, Object> body,
                                                   Authentication authentication) {
         try {
+            if (authentication == null) {
+                return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
+            }
             User user = userRepository.findByemail(authentication.getName())
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
             Double amount = null;
@@ -359,6 +429,9 @@ public class PaymentController {
     @ResponseBody
     public ResponseEntity<?> approveDepositRefund(@PathVariable Long paymentId, Authentication authentication) {
         try {
+            if (authentication == null) {
+                return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
+            }
             User user = userRepository.findByemail(authentication.getName())
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
             Payment payment = paymentService.approveDepositRefund(paymentId, user.getId());
@@ -602,6 +675,9 @@ public class PaymentController {
     @GetMapping("/download-receipt/{paymentId}")
     public ResponseEntity<byte[]> downloadReceipt(@PathVariable Long paymentId, Authentication authentication) {
         try {
+            if (authentication == null) {
+                return ResponseEntity.status(401).build();
+            }
             User user = userRepository.findByemail(authentication.getName())
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -707,7 +783,13 @@ public class PaymentController {
     }
 
     private void finalizePaymentSuccess(String paymentIntentId, String source) {
-        Payment payment = paymentService.updatePaymentStatus(paymentIntentId, "COMPLETED");
+        Payment existingPayment = paymentService.getPaymentByStripeId(paymentIntentId)
+                .orElseThrow(() -> new IllegalArgumentException("Payment not found"));
+        boolean alreadyCompleted = "COMPLETED".equalsIgnoreCase(existingPayment.getStatus());
+
+        Payment payment = alreadyCompleted
+                ? existingPayment
+                : paymentService.updatePaymentStatus(paymentIntentId, "COMPLETED");
         if (payment == null) {
             throw new IllegalArgumentException("Payment not found");
         }
@@ -721,30 +803,49 @@ public class PaymentController {
             if ("ADVANCE".equalsIgnoreCase(payment.getPaymentType())) {
                 payment.setBookingApprovalStatus("PENDING_APPROVAL");
                 paymentRepository.save(payment);
-                property.setAvailabilityStatus("BOOKED_PENDING_APPROVAL");
-                propertyRepository.save(property);
+                if (!"BOOKED_PENDING_APPROVAL".equalsIgnoreCase(property.getAvailabilityStatus())
+                        && !"NOT_AVAILABLE".equalsIgnoreCase(property.getAvailabilityStatus())) {
+                    property.setAvailabilityStatus("BOOKED_PENDING_APPROVAL");
+                    propertyRepository.save(property);
+                }
 
-                userRepository.findById(property.getLandlordId()).ifPresent(landlord -> {
-                    String landlordName = (landlord.getFirstName() + " " + landlord.getLastName()).trim();
-                    String tenantName = (tenant.getFirstName() + " " + tenant.getLastName()).trim();
-                    emailService.sendLandlordPropertyBookedEmail(
-                            landlord.getEmail(),
-                            landlordName,
-                            property.getName(),
-                            property.getPropertyId(),
-                            tenantName,
-                            payment.getAmount()
-                    );
-                });
+                if (!alreadyCompleted) {
+                    userRepository.findById(property.getLandlordId()).ifPresent(landlord -> {
+                        String landlordName = (landlord.getFirstName() + " " + landlord.getLastName()).trim();
+                        String tenantName = (tenant.getFirstName() + " " + tenant.getLastName()).trim();
+                        emailService.sendLandlordPropertyBookedEmail(
+                                landlord.getEmail(),
+                                landlordName,
+                                property.getName(),
+                                property.getPropertyId(),
+                                tenantName,
+                                payment.getAmount()
+                        );
+                    });
+                }
             }
 
-            paymentReceiptService.generatePaymentReceipt(payment, tenant, property);
-            String fullName = tenant.getFirstName() + " " + tenant.getLastName();
-            emailService.sendPaymentSuccessEmail(tenant.getEmail(), fullName, payment.getPaymentType(), payment.getAmount());
-            logger.info("Payment confirmed via {} for payment {}", source, paymentIntentId);
+            if (!alreadyCompleted) {
+                byte[] receiptPdf = paymentReceiptService.generatePaymentReceipt(payment, tenant, property);
+                String fullName = tenant.getFirstName() + " " + tenant.getLastName();
+                emailService.sendPaymentReceipt(
+                        tenant.getEmail(),
+                        fullName,
+                        receiptPdf,
+                        payment.getPaymentType(),
+                        payment.getAmount()
+                );
+                emailService.sendPaymentSuccessEmail(tenant.getEmail(), fullName, payment.getPaymentType(), payment.getAmount());
+                logger.info("Payment confirmed via {} for payment {}", source, paymentIntentId);
+            } else {
+                logger.info("Ignoring duplicate payment success callback via {} for payment {}", source, paymentIntentId);
+            }
         } catch (Exception e) {
             logger.error("Post-payment processing failed for {}", paymentIntentId, e);
         }
+    }
+
+    private record PaymentRequestDetails(String paymentType, Double amount, String description) {
     }
 
     private void syncPayoutEvent(String eventType, Payout payout) {

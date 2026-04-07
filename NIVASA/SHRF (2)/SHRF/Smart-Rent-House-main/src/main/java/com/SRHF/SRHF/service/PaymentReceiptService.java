@@ -26,14 +26,12 @@ public class PaymentReceiptService {
             PdfDocument pdfDoc = new PdfDocument(writer);
             Document document = new Document(pdfDoc);
 
-            // Title
             Paragraph title = new Paragraph("NIVASA - Payment Receipt")
                     .setFontSize(20)
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginBottom(20);
             document.add(title);
 
-            // Receipt Number and Date
             Paragraph receiptInfo = new Paragraph("Receipt ID: " + payment.getId() + "\n" +
                     "Date: " + payment.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))
                     .setFontSize(12)
@@ -41,7 +39,6 @@ public class PaymentReceiptService {
                     .setMarginBottom(20);
             document.add(receiptInfo);
 
-            // Tenant Information
             document.add(new Paragraph("TENANT INFORMATION").setFontSize(14).setMarginBottom(10));
             Table tenantTable = new Table(UnitValue.createPercentArray(new float[]{1, 2}));
             tenantTable.setWidth(UnitValue.createPercentValue(100));
@@ -52,7 +49,6 @@ public class PaymentReceiptService {
             document.add(tenantTable);
             document.add(new Paragraph("\n"));
 
-            // Property Information
             document.add(new Paragraph("PROPERTY INFORMATION").setFontSize(14).setMarginBottom(10));
             Table propertyTable = new Table(UnitValue.createPercentArray(new float[]{1, 2}));
             propertyTable.setWidth(UnitValue.createPercentValue(100));
@@ -65,7 +61,6 @@ public class PaymentReceiptService {
             document.add(propertyTable);
             document.add(new Paragraph("\n"));
 
-            // Payment Details
             document.add(new Paragraph("PAYMENT DETAILS").setFontSize(14).setMarginBottom(10));
             Table paymentTable = new Table(UnitValue.createPercentArray(new float[]{1, 2}));
             paymentTable.setWidth(UnitValue.createPercentValue(100));
@@ -74,7 +69,7 @@ public class PaymentReceiptService {
             paymentTable.addCell("Payment Type:");
             paymentTable.addCell(payment.getPaymentType());
             paymentTable.addCell("Amount:");
-            paymentTable.addCell("₹" + String.format("%.2f", payment.getAmount()));
+            paymentTable.addCell("INR " + String.format("%.2f", payment.getAmount()));
             paymentTable.addCell("Currency:");
             paymentTable.addCell(payment.getCurrency());
             paymentTable.addCell("Payment Method:");
@@ -87,7 +82,6 @@ public class PaymentReceiptService {
             }
             document.add(paymentTable);
 
-            // Footer
             document.add(new Paragraph("\n\nThank you for using NIVASA!").setTextAlignment(TextAlignment.CENTER));
             document.add(new Paragraph("Find your place. Live your peace.").setTextAlignment(TextAlignment.CENTER).setFontSize(10));
 
