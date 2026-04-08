@@ -38,24 +38,28 @@
         .btn-login:hover{background:var(--gradient-secondary);transform:translateY(-3px);box-shadow:var(--shadow-medium)}
         
         /* HERO SECTION */
-        .hero{position:relative;padding:120px 32px 180px;text-align:center;color:white;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);background-size:cover;background-position:center center;overflow:hidden}
-        .hero::before{content:"";position:absolute;inset:0;background:linear-gradient(45deg,rgba(79,70,229,0.1) 0%,rgba(102,126,234,0.1) 100%);animation:shimmer 3s infinite}
+        .hero{position:relative;min-height:calc(100vh - 88px);padding:120px 32px 180px;display:flex;align-items:center;justify-content:center;text-align:center;color:white;background-image:linear-gradient(180deg,rgba(7,14,28,0.24) 0%,rgba(7,14,28,0.18) 38%,rgba(7,14,28,0.38) 100%),url('/images/nivasa-home-hero-sharp.jpg');background-size:cover;background-position:center center;background-repeat:no-repeat;overflow:hidden}
+        .hero::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0.02) 0%,rgba(255,255,255,0) 35%,rgba(15,23,42,0.18) 100%)}
         .hero::after{content:"";position:absolute;bottom:0;left:0;right:0;height:100px;background:linear-gradient(to top,var(--bg) 0%,transparent 100%)}
-        .hero-content{max-width:900px;margin:0 auto;position:relative;z-index:2;animation:fadeInUp 1s ease-out}
-        .hero-badge{display:inline-block;background:linear-gradient(135deg,rgba(255,255,255,0.15) 0%,rgba(255,255,255,0.1) 100%);backdrop-filter:blur(10px);color:rgba(255,255,255,0.95);padding:10px 20px;border-radius:25px;font-weight:600;margin-bottom:20px;font-size:0.9rem;border:1px solid rgba(255,255,255,0.2);box-shadow:0 4px 15px rgba(0,0,0,0.1)}
-        .hero h1{font-size:3.8rem;line-height:1.1;margin:20px 0;color:#ffffff;font-weight:800;text-shadow:0 8px 25px rgba(2,6,23,0.6);background:linear-gradient(135deg,#ffffff 0%,rgba(255,255,255,0.9) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-        .hero-subtitle{font-size:1.3rem;color:rgba(255,255,255,0.95);margin:20px 0 40px;line-height:1.6;text-shadow:0 2px 8px rgba(2,6,23,0.3)}
+        .hero-content{max-width:940px;margin:0 auto;position:relative;z-index:2;animation:fadeInUp 1s ease-out;padding:24px clamp(24px,4vw,40px)}
+        .hero-badge{display:inline-block;background:rgba(15,23,42,0.54);color:rgba(255,255,255,0.98);padding:10px 20px;border-radius:25px;font-weight:700;margin-bottom:20px;font-size:0.82rem;border:1px solid rgba(255,255,255,0.2);box-shadow:0 10px 28px rgba(0,0,0,0.15);letter-spacing:0.08em;text-transform:uppercase}
+        .hero h1{font-size:clamp(3rem,6vw,5rem);line-height:1.05;margin:20px 0;color:#ffffff;font-weight:800;text-shadow:0 10px 28px rgba(2,6,23,0.6)}
+        .hero-subtitle{max-width:720px;font-size:1.18rem;color:rgba(255,255,255,0.92);margin:20px auto 40px;line-height:1.75;text-shadow:0 2px 12px rgba(2,6,23,0.45)}
         .hero-ctas{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-top:40px}
-        .hero-gallery{display:flex;gap:15px;justify-content:center;margin-top:40px;transform:translateY(30px);position:relative;z-index:3;animation:fadeInUp 1.2s ease-out 0.3s both}
-        .hero-gallery .tile{width:130px;height:85px;border-radius:15px;overflow:hidden;box-shadow:0 12px 35px rgba(2,6,23,0.3);flex:0 0 auto;border:4px solid rgba(255,255,255,0.15);background:linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04));transition:transform 0.3s;backdrop-filter:blur(5px)}
-        .hero-gallery .tile:hover{transform:scale(1.1) rotate(2deg)}
-        .hero-gallery .tile img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.3s}
-        .hero-gallery .tile:hover img{transform:scale(1.1)}
-        .btn{display:inline-block;padding:16px 36px;border-radius:12px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:all 0.3s;font-size:1.1rem;backdrop-filter:blur(10px)}
+        .hero-gallery{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;justify-content:center;max-width:860px;margin:44px auto 0;position:relative;z-index:3;animation:fadeInUp 1.2s ease-out 0.3s both}
+        .hero-gallery .tile{min-height:108px;padding:18px 18px 16px;border-radius:20px;box-shadow:0 18px 40px rgba(2,6,23,0.18);border:1px solid rgba(255,255,255,0.14);background:rgba(15,23,42,0.42);transition:transform 0.3s,background 0.3s;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;text-align:left}
+        .hero-gallery .tile:hover{transform:translateY(-6px);background:rgba(15,23,42,0.52)}
+        .hero-gallery .tile span{display:block;margin-bottom:10px;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.75)}
+        .hero-gallery .tile strong{font-size:1rem;line-height:1.4;color:#ffffff;font-weight:700}
+        .btn{display:inline-block;padding:16px 36px;border-radius:12px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:all 0.3s;font-size:1.1rem}
         .btn-primary{background:var(--gradient-primary);color:white;box-shadow:var(--shadow-medium);border:1px solid rgba(255,255,255,0.1)}
         .btn-primary:hover{transform:translateY(-5px);box-shadow:var(--shadow-strong);background:var(--gradient-secondary)}
-        .btn-secondary{background:rgba(255,255,255,0.15);color:white;border:2px solid rgba(255,255,255,0.3);backdrop-filter:blur(10px)}
+        .btn-secondary{background:rgba(255,255,255,0.15);color:white;border:2px solid rgba(255,255,255,0.3)}
         .btn-secondary:hover{background:rgba(255,255,255,0.25);transform:translateY(-3px);border-color:rgba(255,255,255,0.5)}
+        .hero .btn-primary{background:#ffffff;color:#0f172a;border-color:rgba(255,255,255,0.75);box-shadow:0 18px 45px rgba(2,6,23,0.24)}
+        .hero .btn-primary:hover{background:#f8fafc;color:#0f172a;box-shadow:0 22px 55px rgba(2,6,23,0.32)}
+        .hero .btn-secondary{background:rgba(15,23,42,0.5);border-color:rgba(255,255,255,0.32)}
+        .hero .btn-secondary:hover{background:rgba(15,23,42,0.64)}
         
         /* STATS SECTION */
         .stats{background:linear-gradient(135deg,var(--card) 0%,rgba(246,248,251,0.8) 100%);padding:80px 32px;box-shadow:var(--shadow-soft);position:relative;overflow:hidden}
@@ -150,7 +154,10 @@
             .navbar{flex-direction:column;gap:20px;padding:20px}
             .nav-menu{justify-content:center;max-width:100%}
             .btn-login{margin-left:0;margin-top:8px;order:2}
-            .hero-gallery .tile{width:90px;height:60px}
+            .hero{min-height:auto}
+            .hero-content{padding:24px}
+            .hero-gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+            .hero-gallery .tile{min-height:92px}
             .features::after{display:none}
             .stats{background-size:contain;background-position:left bottom;padding:60px 20px}
             .stats-grid{gap:24px}
@@ -172,7 +179,8 @@
             .hero-subtitle{font-size:1rem}
             .hero-badge{font-size:0.8rem;padding:8px 16px}
             .hero-gallery{gap:8px}
-            .hero-gallery .tile{width:70px;height:45px}
+            .hero-gallery{grid-template-columns:1fr}
+            .hero-gallery .tile{min-height:84px;padding:16px}
             .section-title{font-size:1.8rem}
             .stat-item h3{font-size:2rem}
             .feature-card{padding:24px}
@@ -248,34 +256,29 @@
 <!-- HERO SECTION -->
 <section class="hero">
     <div class="hero-content">
-        <div class="hero-badge">&#10024; Your Trusted Rental Platform</div>
+        <div class="hero-badge">Smart Rental Living</div>
         <h1>Find Your Place. Live Your Peace.</h1>
-        <p class="hero-subtitle">NIVASA connects tenants and landlords seamlessly. Browse verified properties, secure your rental, and manage payments all in one place. Your perfect home is just a click away.</p>
+        <p class="hero-subtitle">NIVASA is your smart rental housing platform, built to make finding the right home simple, secure, and stress-free. Explore verified properties, book visits, connect with landlords, and manage your rental journey from one seamless space.</p>
         <div class="hero-ctas">
             <a href="/login" class="btn btn-primary">Get Started Now</a>
             <a href="#features" class="btn btn-secondary">Learn More</a>
         </div>
-        <div class="hero-gallery" aria-hidden="true">
-            <div class="tile" style="background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); display: flex; align-items: center; justify-content: center;">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+        <div class="hero-gallery" aria-label="NIVASA highlights">
+            <div class="tile">
+                <span>Verified Homes</span>
+                <strong>Browse trusted rental listings with confidence.</strong>
             </div>
-            <div class="tile" style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%); display: flex; align-items: center; justify-content: center;">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+            <div class="tile">
+                <span>Book Visits</span>
+                <strong>Schedule property tours in just a few taps.</strong>
             </div>
-            <div class="tile" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); display: flex; align-items: center; justify-content: center;">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+            <div class="tile">
+                <span>Smart Support</span>
+                <strong>Get answers fast with built-in FAQs and guidance.</strong>
             </div>
-            <div class="tile" style="background: linear-gradient(135deg, #ef4444 0%, #f87171 100%); display: flex; align-items: center; justify-content: center;">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+            <div class="tile">
+                <span>Better Discovery</span>
+                <strong>Find nearby homes and neighborhoods that fit your life.</strong>
             </div>
         </div>
     </div>

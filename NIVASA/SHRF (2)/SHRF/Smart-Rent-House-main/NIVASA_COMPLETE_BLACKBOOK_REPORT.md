@@ -375,7 +375,7 @@ These technologies were selected because they are reliable, widely used, well do
 | FR-14 | The system shall show whether the current monthly rent is paid or pending. |
 | FR-15 | The system shall email payment receipts to tenants. |
 | FR-16 | The system shall support reviews, password reset, and support pages. |
- continue tommorow....
+ 
 ## 4.4 Non-Functional Requirement
 
 ### Table 4: Non-Functional Requirements
@@ -388,7 +388,7 @@ These technologies were selected because they are reliable, widely used, well do
 | Performance | The platform should respond efficiently for moderate academic or prototype usage. |
 | Maintainability | The codebase should remain modular through layered architecture. |
 | Scalability | New modules such as analytics or mobile apps should be addable in future. |
-| Availability | Core pages should remain operational whenever server and database are available. |
+| Availability | New modules such as analytics or mobile apps should be addable in future.. |
 | Portability | The system should run on common operating systems with Java and MySQL support. |
 
 ## 4.5 Feasibility Study
