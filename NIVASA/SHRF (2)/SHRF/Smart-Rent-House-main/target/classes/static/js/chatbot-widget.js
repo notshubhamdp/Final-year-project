@@ -36,8 +36,14 @@
     var prefix = document.createTextNode("Customer care email: ");
     var link = create("a", "chatbot-email-link", email);
     link.href = "mailto:" + email;
+    var faqWrap = create("div", "chatbot-support-link-wrap");
+    var faqLink = create("a", "chatbot-support-link", "FAQ page");
+    faqLink.href = "/faq";
     msg.appendChild(prefix);
     msg.appendChild(link);
+    faqWrap.appendChild(document.createTextNode("FAQ page: "));
+    faqWrap.appendChild(faqLink);
+    msg.appendChild(faqWrap);
     container.appendChild(msg);
     container.scrollTop = container.scrollHeight;
   }

@@ -261,11 +261,36 @@
             padding: 20px;
             color: #95a5a6;
         }
+
     </style>
     
     <link rel="stylesheet" href="/css/professional-theme.css">
         <link rel="stylesheet" href="/css/chatbot-widget.css">
 <link rel="stylesheet" href="/css/responsive.css">
+    <style>
+        /* Keep the support assistant clear of the chat composer on this page. */
+        .chatbot-toggle {
+            right: 18px !important;
+            bottom: 128px !important;
+        }
+
+        .chatbot-panel {
+            right: 18px !important;
+            bottom: 194px !important;
+        }
+
+        @media (max-width: 768px) {
+            .chatbot-toggle {
+                right: 14px !important;
+                bottom: 118px !important;
+            }
+
+            .chatbot-panel {
+                right: 14px !important;
+                bottom: 184px !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="chat-container">
@@ -276,7 +301,7 @@
             </div>
             <div style="display: flex; gap: 10px;">
                 <a href="/messages/conversations" class="back-btn">&larr; Messages</a>
-                <a href="/dashboard" class="back-btn">&larr; Dashboard</a>
+                <a th:href="${backDashboardUrl}" class="back-btn">&larr; Dashboard</a>
             </div>
         </div>
 

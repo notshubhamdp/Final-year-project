@@ -119,6 +119,7 @@ public class MessageController {
             model.addAttribute("currentUserId", user.getId());
             model.addAttribute("unreadCount",
                     messageService.getUnreadMessageCount(user.getId()));
+            model.addAttribute("backDashboardUrl", resolveDashboardUrl(user));
 
             return "conversations";
         } catch (Exception e) {
@@ -126,6 +127,7 @@ public class MessageController {
             model.addAttribute("error", "Failed to load conversations: " + e.getMessage());
             model.addAttribute("conversations", new ArrayList<ConversationSummary>());
             model.addAttribute("unreadCount", 0L);
+            model.addAttribute("backDashboardUrl", "/tenant-dashboard");
             return "conversations";
         }
     }
@@ -175,6 +177,7 @@ public class MessageController {
             model.addAttribute("propertyId", propertyId);
             model.addAttribute("displayPropertyId", displayPropertyId);
             model.addAttribute("currentUserId", user.getId());
+            model.addAttribute("backDashboardUrl", resolveDashboardUrl(user));
 
             return "conversation";
         } catch (RuntimeException e) {
@@ -253,6 +256,13 @@ public class MessageController {
         } catch (java.io.UnsupportedEncodingException e) {
             return "Error";
         }
+    }
+
+    private String resolveDashboardUrl(User user) {
+        if (user != null && "LANDLORD".equalsIgnoreCase(user.getRole())) {
+            return "/landlord-dashboard";
+        }
+        return "/tenant-dashboard";
     }
 
     /**
