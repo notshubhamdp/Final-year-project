@@ -377,35 +377,15 @@
 </section>
 
 <!-- TESTIMONIALS -->
-<section class="testimonials">
+<section class="testimonials" th:if="${homeReviews != null and !#lists.isEmpty(homeReviews)}">
     <div style="max-width:1200px;margin:0 auto">
         <h2 class="section-title">What Our Users Say</h2>
-        <div class="testimonials-grid" th:if="${homeReviews != null and !#lists.isEmpty(homeReviews)}">
+        <div class="testimonials-grid">
             <div class="testimonial-card" th:each="review : ${homeReviews}">
                 <div class="stars" th:text="${review.starText}">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
                 <p class="testimonial-text" th:text="${review.reviewText}">Great platform.</p>
                 <div class="testimonial-author" th:text="${review.reviewerName}">User Name</div>
                 <div class="testimonial-role" th:text="${review.roleAndCity}">Tenant, City</div>
-            </div>
-        </div>
-        <div class="testimonials-grid" th:if="${homeReviews == null or #lists.isEmpty(homeReviews)}">
-            <div class="testimonial-card">
-                <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <p class="testimonial-text">"Smart Rent House made finding my apartment so easy. Everything was transparent and the landlord was responsive. Highly recommended!"</p>
-                <div class="testimonial-author">Priya Sharma</div>
-                <div class="testimonial-role">Tenant, Mumbai</div>
-            </div>
-            <div class="testimonial-card">
-                <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <p class="testimonial-text">"As a landlord, this platform helped me find reliable tenants quickly. The verification process is thorough and the management tools are excellent."</p>
-                <div class="testimonial-author">Rajesh Patel</div>
-                <div class="testimonial-role">Landlord, Bangalore</div>
-            </div>
-            <div class="testimonial-card">
-                <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <p class="testimonial-text">"The best rental platform I've used. Great customer support, secure transactions, and a huge variety of properties. Worth every moment!"</p>
-                <div class="testimonial-author">Anjali Desai</div>
-                <div class="testimonial-role">Tenant, Pune</div>
             </div>
         </div>
     </div>

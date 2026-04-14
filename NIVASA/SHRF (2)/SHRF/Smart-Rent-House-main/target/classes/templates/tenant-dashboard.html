@@ -114,7 +114,6 @@
         
         /* PROPERTY CARD */
         .property-item{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);transition:all 0.3s;border:1px solid var(--border);position:relative}
-        .property-item.featured::before{content:'Featured';position:absolute;top:12px;left:12px;background:linear-gradient(135deg,#fbbf24 0%,#f59e0b 100%);color:#92400e;padding:6px 12px;border-radius:20px;font-weight:600;font-size:0.85rem;z-index:2}
         .property-item:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);border-color:var(--accent)}
         .property-image-container{width:100%;height:220px;overflow:hidden;background:linear-gradient(135deg,#f3f4f6 0%,#e5e7eb 100%);display:flex;align-items:center;justify-content:center;position:relative}
         .property-badge{position:absolute;top:12px;right:12px;background:rgba(79,70,229,0.9);color:white;padding:4px 10px;border-radius:20px;font-size:0.8rem;font-weight:600;z-index:1}
@@ -502,8 +501,7 @@
         
         <div class="properties-list" th:unless="${#lists.isEmpty(availableProperties)}" id="propertiesContainer">
             <div class="property-item" th:each="property,iterStat : ${availableProperties}" 
-                 th:attr="data-id=${property.id},data-price=${property.price},data-city=${property.city},data-name=${property.name},data-address=${property.address},data-lat=${property.latitude},data-lng=${property.longitude}"
-                 th:classappend="${iterStat.index < 3 ? 'featured' : ''}">
+                 th:attr="data-id=${property.id},data-price=${property.price},data-city=${property.city},data-name=${property.name},data-address=${property.address},data-lat=${property.latitude},data-lng=${property.longitude}">
                 
                 <div class="property-image-container">
                     <img class="property-image" th:src="@{/tenant/file/image/{id}/{index}(id=${property.id},index=0)}" alt="Property Image" th:title="${property.name}">
